@@ -1,0 +1,121 @@
+---
+title: 'cuyem: Snake River Basin Anadromous Fish Metric Estimation'
+author: "Ryan N. Kinzer"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output:
+  html_document:
+    collapsed: yes
+    fig_caption: yes
+    fig_height: 8
+    fig_width: 8
+    smooth_scroll: yes
+    theme: cerulean
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+  html_vignette: null
+link-citations: yes
+csl: /Users/ryank/Documents/Ryan Sync/Templates/american-fisheries-society.csl
+bibliography: /Users/ryank/Documents/Ryan Sync/References/simulation.bib
+vignette: |
+  %\VignetteIndexEntry{cuyem} %\VignetteEngine{knitr::rmarkdown} %\VignetteEncoding{UTF-8}
+---
+`r #  rmarkdown::html_vignette`
+### Background
+The culture of the Nez Perce Tribe and it's people, the Nimiip\'uu, revolve around fish and water.  As such, its only fitting to name an R package, centered solely on monitoring and evaluating anadromous fish population status, after the Nimiip\'uu word for fish: __cuyem__. The __cuyem__ package serves as a tool for the Nez Perce Tribe's Department of Fisheries Resources Management (DFRM) staff to calculate population indicators and metrics using standard methods across multiple species and populations.  __cuyem__ and the embedded functions can then be shared with co-managers, regulatory and funding agencies to achieve full reproducibility and transparency of population estimates and methodology.
+
+The __cuyem__ package has multiple companion manuscripts that document Nez Perce Tribe field data collection methods, data management procedures and calculation methods for population indicators and metrics. Indicator and metric calculation methods used within each __cuyem__ function is documented and further explained in the DFRM research division's *Standardized Performance Measures* document (Kinzer et al. 2017). All documents pertaining to the Research Division's field and analysis methods can be found on the Nez Perce Tribe Department of Fisheries Resources Management website; [www.nptfisheries.org](www.nptfisheries.org). 
+
+The __cuyem__ package is in a development phase and currently under going significant changes. Included functions are being improved and others are being added weekly. Because the package is changing constantly it's recommended to download a new version into the local R library before each use.  Package suggestions, critiques or collaborative participation are welcomed and encouraged by contacting Ryan Kinzer, \email{ryank@nezperce.org}. 
+
+### Load Package
+
+The newest version of __cuyem__ is stored in a GitHub repository and freely accessible. To obtain the package first install Hadley Wickam's __devtools__ from R CRAN. The function *install_github()* will retrieve the latest version of __cuyem__ from the GitHub repository, [https://github.com/ryankinzer/cuyem](https://github.com/ryankinzer/cuyem), and install it to a local R library.
+
+```{r, eval=FALSE}
+install.packages('devtools')
+devtools::install_github("ryankinzer/cuyem")
+```
+
+After installing __cuyem__ it is necessary to load the package into the current R session with *library('cuyem')* before using any built in functions. 
+
+```{r}
+library('cuyem')
+```
+
+### Emigrant Abundance
+
+Estimating emigrant abundance from data collected at juvenile rotary screw traps is completed with the function *emigrant_abundance()*.  The function's help page can be accessed by typing *?emigrant_abundance()* into the R console.  The function has one required argument consisting of a data frame with at least three fields (i.e., columns).  The three required field names must be 'Capture', 'Mark' and 'Recapture' to ensure the function uses the correct data in the mark-recapture equation.  The data frame must have at least one record (i.e., row) representing a unique strata of summed fish trapped during the period. An example data frame with three strata is shown below.  
+
+```{r}
+dat <- data.frame(Strata = c(1, 2, 3),
+                  Capture = c(100, 200, 300),
+                  Mark = c(100, 150, 100),
+                  Recapture = c(15, 10, 20))
+```
+
+```{r}
+print(dat,row.names = FALSE)
+```
+
+To estimate abundance simple call the function and specify the name of the data frame. The other function arguments are set to DEFAULT values and do not need to change.
+
+```{r}
+N_hat <- emigrant_abundance(data = dat, alpha = 0.05, iter = 1000, print=TRUE, save_file = FALSE, file_name = NULL)
+```
+
+The values printed to the console represent the total estimate and precision after combining all strata.  To view individual strata estimates access the *Strata* data frame saved to the R object *N_hat*. Other attributes of the N_hat object can be seen using *attributes(N_hat)*.
+
+```{r}
+print(N_hat$Strata)
+```
+
+To suppress printing total estimates to the R console change the argument to *print=FALSE*.  A comma separated value (.csv) file can be saved to the current working directory by using *save_file = TRUE*.  An automatic filename with the prefix *emigrant_abundance* is assigned to the .csv file, or a name can be assigned with the argument *file_name = "name_of_file"*.  In addition, the date the file was created is also appended to the .csv file name.
+
+A .csv file can also be assigned to the function for simplicity following the format below, provided the file has 'Capture', 'Mark' and 'Recapture' fields.  The example below also shows how the DEFAULT values for the other arguements can be used and left out of the function call for simplicity.
+
+```{r, eval=FALSE}
+N_hat <- emigrant_abundance(data = "inputdata.csv")
+```
+
+### Estimate Proportion
+
+Proportions are one of the most commonly estimated fish metrics for evaluating the status of Snake River basin anadromous fish populations.  Proportions are used to understand trends in population sex ratios, the fraction of hatchery fish spawning (*pHOS*), and age structure. Yet, proportions are rarely presented with estimates of precision.  The *estimate_proportion()* function returns a proportion with the associated standard error and confidence intervals.     
+
+```{r}
+p_hat <- estimate_proportion(x = 10, n = 100, method = 'score', alpha = 0.05, print = TRUE)
+```
+
+The only two required arguments are the number of successes (*x*) and the number of trials (*n*).  The other arguments are set to DEFAULT methods and do not need to be entered into the function call.
+
+Three methods exist for estimating confidence intervals; 'wald', 'exact' and 'score'.  The DEFAUT method is 'score' which provides strictly positive confidence interval estimates with nominal coverage probabilities.  
+
+The *'wald'* method has the potential to produce confidence intervals outside the range of [0,1]. 
+
+```{r}
+p_hat <- estimate_proportion(x = 1, n = 10, method = 'wald')
+```
+
+```{r}
+p_hat <- estimate_proportion(x = 9, n = 10, method = 'wald')
+```
+
+And the *'exact'* method tends to produce too wide of confidence intervals that exceed the desired coverage probabilites.
+
+```{r}
+p_hat <- estimate_proportion(x = 5, n = 10, method = 'exact')
+```
+
+```{r}
+exact_width <- p_hat$CI.upper - p_hat$CI.lower
+exact_width
+```
+
+```{r}
+p_hat <- estimate_proportion(x = 5, n = 10, method = 'score')
+```
+
+```{r}
+score_width <- p_hat$CI.upper - p_hat$CI.lower
+score_width
+```

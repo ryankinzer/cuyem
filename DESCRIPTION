@@ -1,0 +1,14 @@
+Package: cuyem
+Type: Package
+Title: cuyem: Snake River Basin Anadromous Fish Metric Estimation
+Version: 0.1.0
+Author: Ryan N. Kinzer
+Maintainer: Ryan N. Kinzer <ryank@nezperce.org>
+Description: test
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 5.0.1
+Suggests: knitr,
+    rmarkdown
+VignetteBuilder: knitr
