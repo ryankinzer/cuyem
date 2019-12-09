@@ -4,13 +4,19 @@
 \alias{redd_sums}
 \title{Title}
 \usage{
-redd_sums(redd.data, species = "Chinook", run = "Spring/Summer",
-  probabilistic = FALSE)
+redd_sums(
+  redd.data,
+  species = "Chinook",
+  run = "Spring/Summer",
+  probabilistic = FALSE
+)
 }
 \arguments{
 \item{probabilistic}{}
 }
+\value{
+
+}
 \description{
 Title
 }
-

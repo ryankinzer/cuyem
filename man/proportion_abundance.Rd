@@ -9,7 +9,9 @@ proportion_abundance(N, SE.N, x, n, alpha = 0.05)
 \arguments{
 \item{alpha}{}
 }
+\value{
+
+}
 \description{
 Title
 }
-

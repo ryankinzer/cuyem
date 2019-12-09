@@ -9,7 +9,9 @@ carcass_flatfile(carcass.sum)
 \arguments{
 \item{carcass.sum}{}
 }
+\value{
+
+}
 \description{
 Title
 }
-

@@ -4,13 +4,14 @@
 \alias{abundance_partioning}
 \title{Title}
 \usage{
-abundance_partioning(N, SE.N, X, groups = NULL, alpha = 0.05,
-  print = TRUE)
+abundance_partioning(N, SE.N, X, groups = NULL, alpha = 0.05, print = TRUE)
 }
 \arguments{
 \item{print}{}
 }
+\value{
+
+}
 \description{
 Title
 }
-

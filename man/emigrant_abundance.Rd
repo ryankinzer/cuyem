@@ -4,8 +4,14 @@
 \alias{emigrant_abundance}
 \title{Estimate juvenile emigrant abundance from mark-recapture data.}
 \usage{
-emigrant_abundance(data, alpha = 0.05, iter = 1000, print = TRUE,
-  save_file = FALSE, file_name = NULL)
+emigrant_abundance(
+  data,
+  alpha = 0.05,
+  iter = 1000,
+  print = TRUE,
+  save_file = FALSE,
+  file_name = NULL
+)
 }
 \arguments{
 \item{data}{An R dataframe or "example.csv" file containing at least three fields of data; the
@@ -41,6 +47,7 @@ A list of point and uncertainty estimates by each strata.
  Standard error and confidence intervals will not match GAUSS estimates
   perfectly because of bootstrapped sample distribution.
 }
+
 \examples{
 # A single strata
 est1 <- emigrant_abundance(data.frame(C = 76, M = 68, R = 7), alpha = 0.05, iter = 1000, print = TRUE)
@@ -62,4 +69,3 @@ est_csv <- emigrant_abundance(data = "example.csv", alpha = .05,iter = 1000, pri
 \author{
 Ryan N. Kinzer
 }
-

@@ -9,7 +9,9 @@ sgs_data_processor(sgs.data, transect.tbl)
 \arguments{
 \item{transect.tbl}{}
 }
+\value{
+
+}
 \description{
 Title
 }
-

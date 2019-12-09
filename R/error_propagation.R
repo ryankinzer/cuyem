@@ -63,5 +63,5 @@ error_propagation <- function(fx = "multiply",type= "both_random",X, SE.X, Y, SE
   output <- list(z = z, z.se = z.se,
                  CI.lower = CI.lower, CI.upper = CI.upper)
 
-  return(output)
+  return(z.se)
 }

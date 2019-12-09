@@ -9,7 +9,9 @@ proportion_abundance_phat(N, SE.N, phat, SE.phat, alpha = 0.05)
 \arguments{
 \item{alpha}{}
 }
+\value{
+
+}
 \description{
 Title
 }
-

@@ -9,7 +9,9 @@ trap_data_processor(data)
 \arguments{
 \item{data}{}
 }
+\value{
+
+}
 \description{
 Title
 }
-

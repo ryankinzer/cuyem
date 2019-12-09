@@ -4,13 +4,22 @@
 \alias{vector_addition}
 \title{Title}
 \usage{
-vector_addition(fx = "multiply", type = "both_random", X, SE.X, Y,
-  SE.Y = NULL, alpha = 0.05)
+vector_addition(
+  fx = "multiply",
+  type = "both_random",
+  X,
+  SE.X,
+  Y,
+  SE.Y = NULL,
+  alpha = 0.05
+)
 }
 \arguments{
 \item{alpha}{}
 }
+\value{
+
+}
 \description{
 Title
 }
-

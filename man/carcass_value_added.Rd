@@ -9,7 +9,9 @@ carcass_value_added(carcass.data, bin_length, recap_mark, target_mark)
 \arguments{
 \item{target_mark}{}
 }
+\value{
+
+}
 \description{
 Title
 }
-

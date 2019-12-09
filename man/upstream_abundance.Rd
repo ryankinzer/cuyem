@@ -4,8 +4,16 @@
 \alias{upstream_abundance}
 \title{Estimate adults abundance upstream of a weir using mark-recapture data.}
 \usage{
-upstream_abundance(C, M, R, groups = NULL, alpha = 0.05,
-  CI.type = c("normal", "boot"), iter = 1000, print = TRUE)
+upstream_abundance(
+  C,
+  M,
+  R,
+  groups = NULL,
+  alpha = 0.05,
+  CI.type = c("normal", "boot"),
+  iter = 1000,
+  print = TRUE
+)
 }
 \arguments{
 \item{C}{a vector of captures at the second capture occasion}
@@ -47,4 +55,3 @@ tmp <- upstream_abundanc(C,M,R,groups = s_name, CI.type = 'normal')
 \author{
 Ryan N. Kinzer
 }
-

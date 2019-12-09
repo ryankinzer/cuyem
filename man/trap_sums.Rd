@@ -9,7 +9,9 @@ trap_sums(data)
 \arguments{
 \item{data}{}
 }
+\value{
+
+}
 \description{
 Title
 }
-

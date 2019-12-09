@@ -9,7 +9,9 @@ carcass_expansion(n, g, SE.g, groups = NULL, alpha = 0.05, print = TRUE)
 \arguments{
 \item{print}{}
 }
+\value{
+
+}
 \description{
 Title
 }
-

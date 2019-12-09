@@ -9,7 +9,9 @@ redd_flatfile(redd.dat)
 \arguments{
 \item{redd.dat}{}
 }
+\value{
+
+}
 \description{
 Title
 }
-

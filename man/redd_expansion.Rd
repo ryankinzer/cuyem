@@ -4,13 +4,24 @@
 \alias{redd_expansion}
 \title{Title}
 \usage{
-redd_expansion(R, n_f, n_s, n_p, n_fp, CI.type = "delta", alpha = 0.05,
-  iterations = 1000, print = TRUE)
+redd_expansion(
+  R,
+  n_f,
+  n_s,
+  n_p,
+  n_fp,
+  CI.type = "delta",
+  alpha = 0.05,
+  iterations = 1000,
+  print = TRUE
+)
 }
 \arguments{
 \item{print}{}
 }
+\value{
+
+}
 \description{
 Title
 }
-

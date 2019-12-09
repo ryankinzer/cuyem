@@ -9,7 +9,9 @@ carcass_age_flatfile(carcass.dat, species, run)
 \arguments{
 \item{run}{}
 }
+\value{
+
+}
 \description{
 Title
 }
-

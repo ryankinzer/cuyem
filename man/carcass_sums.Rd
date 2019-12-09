@@ -9,7 +9,9 @@ carcass_sums(carcass.data, species = "Chinook", run = "Spring/Summer")
 \arguments{
 \item{run}{}
 }
+\value{
+
+}
 \description{
 Title
 }
-
