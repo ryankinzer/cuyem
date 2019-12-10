@@ -8,19 +8,17 @@ first gather data.}
 \usage{
 get_JuvenileDES(
   output = c("detail", "smoltEq"),
-  dsId_abundance = 85,
-  dsID_survival = 86,
   alpha = 0.05,
-  cdms_host = "https://cdms.nptfisheries.org"
+  cdms_url = "https://cdms.nptfisheries.org"
 )
 }
 \arguments{
+\item{alpha}{Type I error rate. Default is set at 0.05 to produce 95\%
+confidence intervals.}
+
 \item{dsId_abundance}{CDMS datasetId for RST abundance dataset.}
 
 \item{dsID_survival}{CDMS datasetId for juvenile survival dataset.}
-
-\item{alpha}{Type I error rate. Default is set at 0.05 to produce 95\%
-confidence intervals.}
 
 \item{cdms_host}{URL for CDMS website.}
 }

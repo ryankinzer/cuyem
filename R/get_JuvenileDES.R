@@ -13,18 +13,23 @@
 #'
 #' @examples
 get_JuvenileDES <- function(output = c('detail', 'smoltEq'),
-                           dsId_abundance = 85,
-                              dsID_survival = 86,
                               alpha = 0.05,
-                              cdms_host = 'https://cdms.nptfisheries.org'){
-  library(tidyverse)
-  library(cdmsR)
+                              cdms_url = 'https://cdms.nptfisheries.org'){
 
   output <- match.arg(output)
 
-  # datastore id = 85 for RST abundance
-  a_raw <- getDatasetView(datastoreID = 85, cdms_host = 'https://cdms.nptfisheries.org')
-  s_raw <- getDatasetView(datastoreID = 86, cdms_host = 'https://cdms.nptfisheries.org')
+  if(!requireNamespace("cdmsR", quietly = TRUE)){
+    stop("Package \"cdmsR\" is needed for this function to work.  Please install it.",
+         call. = FALSE)
+  }
+
+  if("try-error" %in% class(try(getDatastores(cdms_host = cdms_url)))){
+    stop('A CDMS login is required for this function to work. Please use \"cdmsLogin\" with your username and password first.', call. = FALSE)
+  }
+
+  a_raw <- getDatasetView(datastoreID = 85, cdms_host = cdms_url)
+
+  s_raw <- getDatasetView(datastoreID = 86, cdms_host = cdms_url)
 
   a_df <- a_raw %>%
     filter(Lifestage != 'Total') %>%

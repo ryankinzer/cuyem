@@ -13,14 +13,21 @@
 # Created 08/25/2016
 #------------------------------------------------------------------------------
 
+#' Title
+#'
+#' @param fx
+#' @param type
+#' @param X
+#' @param SE.X
+#' @param Y
+#' @param SE.Y
+#' @param alpha
+#'
+#' @return
+#' @export
+#'
+#' @examples
 error_propagation <- function(fx = "multiply",type= "both_random",X, SE.X, Y, SE.Y = NULL, alpha = 0.05){
-
-
-  # X
-  # SE.X
-  # Y
-  # SE.Y
-  # alpha
 
   if(fx == "multiply"){
       z <- X*Y
@@ -56,12 +63,11 @@ error_propagation <- function(fx = "multiply",type= "both_random",X, SE.X, Y, SE
           z.se <- SE.X}
 }
 
-
-  CI.lower <- z - qnorm(1-alpha/2)*z.se
-  CI.upper <- z + qnorm(1-alpha/2)*z.se
-
-  output <- list(z = z, z.se = z.se,
-                 CI.lower = CI.lower, CI.upper = CI.upper)
+  # CI.lower <- z - qnorm(1-alpha/2)*z.se
+  # CI.upper <- z + qnorm(1-alpha/2)*z.se
+  #
+  # output <- list(z = z, z.se = z.se,
+  #                CI.lower = CI.lower, CI.upper = CI.upper)
 
   return(z.se)
 }
