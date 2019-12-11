@@ -36,8 +36,6 @@ format_JuvenileDES <- function(df = NULL,
                                odbc_connection,
                                cdms_url = 'https://cdms.nptfisheries.org'){
 
-  des <- match.arg(des)
-
   con <- odbc_connection
 
   if(class(con) != 'RODBC'){
