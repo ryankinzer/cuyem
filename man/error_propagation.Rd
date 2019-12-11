@@ -2,24 +2,44 @@
 % Please edit documentation in R/error_propagation.R
 \name{error_propagation}
 \alias{error_propagation}
-\title{Title}
+\title{Error Propagation}
 \usage{
 error_propagation(
-  fx = "multiply",
-  type = "both_random",
-  X,
-  SE.X,
-  Y,
-  SE.Y = NULL,
+  fx = c("addition", "subtraction", "product", "division"),
+  type = c("both_random", "y_constant"),
+  x,
+  se.x,
+  y,
+  se.y = NULL,
   alpha = 0.05
 )
 }
 \arguments{
-\item{alpha}{}
+\item{fx}{the function being applied; \code{c("addition", "subtraction", "product","division")}.}
+
+\item{type}{set both \code{x} and \code{y} as random variables (\code{type = "both_random"}) or define \code{y} as a constant (\code{type = "y_constant"}).}
+
+\item{x}{vector of random variables}
+
+\item{se.x}{standard error of \code{x}}
+
+\item{y}{vector of random variables}
+
+\item{se.y}{standard error of \code{y}}
+
+\item{alpha}{Type I error rate. Default is set at 0.05 to produce 95\%
+confidence intervals.}
 }
 \value{
-
+a vector of standard errors based on the supplied arguements.
 }
 \description{
-Title
+Propagate error/uncertainty using variance properties for addition, subtraction, and multiplication and the first order Taylor expansion (i.e., delta method) for the division of two random variables.
+}
+\examples{
+x <- rnorm(10, 0, 1)
+y <- rnorm(10, 5, 10)
+se.x <- rep(2,10)
+se.y <- rep(10,10)
+error_propagation("division", "both_random", x, se.x, y, se.y)
 }
