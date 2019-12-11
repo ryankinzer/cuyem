@@ -78,6 +78,7 @@ format_JuvenileDES <- function(df = NULL,
       Species == 'Chinook salmon' & LocationLabel == 'Johnson Creek RST' ~ 'Summer',
       Species == 'Chinook salmon' & LocationLabel == 'Lower Secesh River RST' ~ 'Summer',
       Species == 'Chinook salmon' & LocationLabel == 'Upper Secesh River RST' ~ 'Summer',
+      Species == 'Chinook salmon' & LocationLabel == 'Lake Creek RST' ~ 'Summer',
       TRUE ~ Run)) %>%
     left_join(detail_meta, by = c('LocationLabel', 'Species' = 'CommonName', 'Run'))
 
