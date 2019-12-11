@@ -10,13 +10,14 @@ get_JuvenileEstimates(alpha = 0.05, cdms_url = "https://cdms.nptfisheries.org")
 \item{alpha}{Type I error rate. Default is set at 0.05 to produce 95\%
 confidence intervals.}
 
-\item{cdms_host}{URL for CDMS website. The default is the Nez Perce Tribe's data repository \url{https://cdms.nptfisheries.org}.}
+\item{cdms_host}{URL for CDMS website. The default is the Nez Perce Tribe's
+data repository \url{https://cdms.nptfisheries.org}.}
 }
 \value{
-\code{get_JuvenileEstimates()} returns a dataframe
-  with all lifestage abundance, survival and smolt equivalent (smoltEq)
-  estimates stored in \url{https://cdms.nptfisheries.org} for each juvenile
-  screw trap, seining and hatchery release group.
+\code{get_JuvenileEstimates()} returns a dataframe with all lifestage
+  abundance, survival and smolt equivalent (smoltEq) estimates stored in
+  \url{https://cdms.nptfisheries.org} for each juvenile screw trap, seining
+  and hatchery release group.
 }
 \description{
 Download juvenile abundance and survival estimates from NPT's

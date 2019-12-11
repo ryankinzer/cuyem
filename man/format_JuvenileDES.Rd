@@ -6,7 +6,6 @@
 \usage{
 format_JuvenileDES(
   df = NULL,
-  des = c("detail", "smoltEq"),
   alpha = 0.05,
   odbc_connection,
   cdms_url = "https://cdms.nptfisheries.org"
@@ -15,13 +14,16 @@ format_JuvenileDES(
 \arguments{
 \item{df}{dataframe output from \code{get_JuvenileEstimates}.}
 
-\item{des}{designates the coordinated assessments DES table you are
-constructing; \code{c("detail", "smoltEq")}.}
+\item{alpha}{Type I error rate. Default is set at 0.05 to produce 95\%
+confidence intervals.}
+
+\item{odbc_connection}{an open odbc channel to CDMS database}
+
+\item{cdms_host}{URL for CDMS website. The default is the Nez Perce Tribe's
+data repository \url{https://cdms.nptfisheries.org}.}
 }
 \value{
-a dataframe with fish indicators and metrics, associated coordinated
-  assessments population metadata, and location and project specific
-  information
+a list with coordinated assessments juvenile outmigrant and juvenile outmigrant detail DES tables
 }
 \description{
 Format juvenile abundance and survival data generated from
@@ -35,6 +37,6 @@ Format juvenile abundance and survival data generated from
 \examples{
 cdmsR::cdmsLogin('your_username', 'your_password')
 df <- get_JuvenileEstimates()
-con <- RODBC::odbcConnect(dsn = 'CDMS_PROD', uid = 'guest', pwd = 'guest')
-format_JuvenileDES(df, des = 'smoltEq')
+con <- RODBC::odbcConnect(dsn = 'data source', uid = 'your_username', pwd = 'your_password')
+format_JuvenileDES(df, odbc_connection = con)
 }
