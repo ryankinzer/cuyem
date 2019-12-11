@@ -85,7 +85,7 @@ format_JuvenileDES <- function(df = NULL,
   detail_des <- detail_df %>%
     select(ID,
            JuvenileOutmigrantsID,
-           Location,
+           Location = LocationLabel,
            LocPTcode,
            LifeStage = Lifestage,
            TotalNatural = Abundance,
