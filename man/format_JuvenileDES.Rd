@@ -6,7 +6,7 @@
 \usage{
 format_JuvenileDES(
   df = NULL,
-  alpha = 0.05,
+  alpha = c(0.05, 0.1),
   odbc_connection,
   cdms_url = "https://cdms.nptfisheries.org"
 )

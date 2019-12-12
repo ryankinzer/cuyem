@@ -32,10 +32,11 @@
 #' format_JuvenileDES(df, odbc_connection = con)
 
 format_JuvenileDES <- function(df = NULL,
-                               alpha = 0.05,
+                               alpha = c(0.05, 0.10),
                                odbc_connection,
                                cdms_url = 'https://cdms.nptfisheries.org'){
 
+  alpha = match.arg(alpha)
   con <- odbc_connection
 
   if(class(con) != 'RODBC'){
@@ -55,9 +56,9 @@ format_JuvenileDES <- function(df = NULL,
     filter(SurvivalTo %in% c(NA, 'Lower Granite Dam')) %>%
     mutate_all(as.character) %>%
     group_by(LocationLabel, Species, Run, Origin, MigratoryYear) %>%
-    mutate(JuvenileOutmigrantsID = uuid(uppercase = TRUE)) %>%
+    mutate(JuvenileOutmigrantsID = guid(uppercase = FALSE)) %>%
     rowwise() %>%
-    mutate(ID = uuid(uppercase = TRUE)) %>%
+    mutate(ID = guid(uppercase = FALSE)) %>%
     ungroup()
 
   # get CAX metadata
@@ -116,14 +117,15 @@ format_JuvenileDES <- function(df = NULL,
       filter(Lifestage != 'YOY') %>%
       mutate_at(vars(contains('Eq')), as.numeric) %>%
       group_by(LocationLabel, Species, Run, MigratoryYear, JuvenileOutmigrantsID) %>%
-      summarise(TotalNatural = sum(SmoltEq),
+      summarise(TotalNatural = round(sum(SmoltEq)),
                 SE_SmEq = sqrt(sum(SE_SmEq^2)),
-                TotalNaturalLowerLimit = TotalNatural - qnorm(1-alpha/2)*SE_SmEq,
-                TotalNaturalUpperLimit = TotalNatural + qnorm(1-alpha/2)*SE_SmEq,
+                TotalNaturalLowerLimit = round(TotalNatural - qnorm(1-alpha/2)*SE_SmEq),
+                TotalNaturalUpperLimit = round(TotalNatural + qnorm(1-alpha/2)*SE_SmEq),
                 Comments = paste0('Only includes lifestages: ', toString(Lifestage)),
                 LastUpdated = max(LastUpdated),
                 UpdDate = max(UpdDate),
                 TotalNaturalAlpha = alpha) %>%
+      mutate(TotalNaturalLowerLimit = ifelse(TotalNaturalLowerLimit < 0, 0, TotalNaturalLowerLimit)) %>%
       ungroup() %>%
     left_join(smoltEq_meta, by = c('LocationLabel', 'Species' = 'CommonName', 'Run')) %>%
       mutate(NullRecord = ifelse(is.na(TotalNatural),'Yes','No'),

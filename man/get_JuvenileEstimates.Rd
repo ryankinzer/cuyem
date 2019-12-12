@@ -4,7 +4,10 @@
 \alias{get_JuvenileEstimates}
 \title{Summarize Juvenile Abundance and Survival Metrics}
 \usage{
-get_JuvenileEstimates(alpha = 0.05, cdms_url = "https://cdms.nptfisheries.org")
+get_JuvenileEstimates(
+  alpha = c(0.05, 0.1),
+  cdms_url = "https://cdms.nptfisheries.org"
+)
 }
 \arguments{
 \item{alpha}{Type I error rate. Default is set at 0.05 to produce 95\%

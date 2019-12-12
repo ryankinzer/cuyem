@@ -23,8 +23,10 @@
 #' cdmsR::cdmsLogin('your_username', 'your_password')
 #' get_JuvenileEstimates()
 #'
-get_JuvenileEstimates <- function(alpha = 0.05,
+get_JuvenileEstimates <- function(alpha = c(0.05, 0.10),
                               cdms_url = 'https://cdms.nptfisheries.org'){
+
+  alpha <- match.arg(alpha)
 
   if(!requireNamespace("cdmsR", quietly = TRUE)){
     stop("Package \"cdmsR\" is needed for this function to work.  Please install it.",
