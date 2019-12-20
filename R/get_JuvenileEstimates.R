@@ -43,25 +43,37 @@ get_JuvenileEstimates <- function(alpha = c('0.05', '0.10'),
 
   a_df <- a_raw %>%
     filter(Lifestage != 'Total') %>%
-    select(LocationLabel, Species, Run, Origin, MigratoryYear, Lifestage, StartDate, EndDate, Period, Abundance, SE_A = StdError, Lower95_A = Lower95, Upper95_A = Upper95, EffDt_A = EffDt, Comments_A = Comments)
+    # select(LocationLabel, Species, Run, Origin, MigratoryYear, Lifestage, StartDate, EndDate, Abundance, SE_A = StdError, Lower95_A = Lower95, Upper95_A = Upper95, EffDt, Comments) %>%
+  mutate(Lifestage = ifelse(Lifestage%in%c('YOY', 'Parr'),'YOY/Parr',Lifestage)) %>%
+    group_by(LocationLabel, Species, Run, Origin, MigratoryYear, Lifestage) %>%
+  summarise(StartDate = min(StartDate),
+         EndDate = max(EndDate),
+         Abundance = sum(Abundance),
+         SE_A = sqrt(sum((StdError^2))),
+         Lower95_A = Abundance - qnorm(1-alpha/2)*SE_A,
+         Upper95_A = Abundance + qnorm(1-alpha/2)*SE_A,
+         EffDt_A = max(EffDt),
+         Comments_A = min(Comments)) %>%
+    mutate(Lower95_A = ifelse(Lower95_A < 0, 0, Lower95_A))
 
   s_df <- s_raw %>%
+    mutate(Lifestage = ifelse(Lifestage%in%c('YOY', 'Parr'),'YOY/Parr',Lifestage)) %>%
     select(LocationLabel, Species, Run, Origin, MigratoryYear, SampleType, TagSite, RearingVessel,
-           ReleaseType, ReleaseGroup, AdClipped, Lifestage, SurvivalTo, Survival, SE_S = StdError, Lower95_S = Lower95, Upper95_S = Upper95, EffDt_S = EffDt, Comments_S = Comments)
+           ReleaseType, ReleaseGroup, AdClipped, Lifestage, SurvivalTo, Survival, SE_S = StdError, Lower95_S = Lower95, Upper95_S = Upper95, EffDt_S = EffDt, Comments_S = Comments) %>%
+    mutate(Lower95_S = Survival - qnorm(1-alpha/2)*SE_S,
+           Upper95_S = Survival + qnorm(1-alpha/2)*SE_S,
+           Lower95_S = ifelse(Lower95_S < 0, 0, Lower95_S),
+           Upper95_S = ifelse(Upper95_S > 1, 1, Upper95_S))
 
   df <- full_join(a_df, s_df, by = c("LocationLabel", "Species", "Run", "Origin", "MigratoryYear", "Lifestage")) %>%
   mutate(EffDt_A = lubridate::ymd_hms(EffDt_A),
          EffDt_S = lubridate::ymd_hms(EffDt_S),
-         Comments = paste0('Abundance comments: ',Comments_A,'; ','Suvival comments: ',Comments_S))
-
-  ests <- df %>%
-    mutate(tmpL = ifelse(Lifestage%in%c('YOY', 'Parr'),'YOY/Parr',Lifestage)) %>%
-    group_by(LocationLabel, Species, Run, Origin, tmpL, MigratoryYear) %>%
-    mutate(Survival = min(Survival,na.rm=TRUE)) %>%
+         Comments = paste0('Abundance comments: ',Comments_A,'; ','Suvival comments: ',Comments_S)) %>%
     mutate(SmoltEq = round(Abundance * Survival,0),
            SE_SmEq = error_propagation(fx = 'product',type= "both_random", x = Abundance, se.x = SE_A,
                                         y = Survival, se.y = SE_S),
            Lower95_SmEq = SmoltEq - qnorm(1-alpha/2)*SE_SmEq,
+           Lower95_SmEq = ifelse(Lower95_SmEq < 0, 0, Lower95_SmEq),
            Upper95_SmEq = SmoltEq + qnorm(1-alpha/2)*SE_SmEq,
            UpdDate = Sys.time(),
            Abundance_alpha = alpha,
@@ -73,5 +85,5 @@ get_JuvenileEstimates <- function(alpha = c('0.05', '0.10'),
     ungroup() %>%
     select(-EffDt_A, -EffDt_S, -Comments_A, -Comments_S)
 
-  return(ests)
+  return(df)
 }

@@ -113,14 +113,13 @@ format_JuvenileDES <- function(df = NULL,
 
 # format smoltEq table
     smoltEq_des <- detail_df %>%
-      filter(Lifestage != 'YOY') %>%
       mutate_at(vars(contains('Eq')), as.numeric) %>%
       group_by(LocationLabel, Species, Run, MigratoryYear, JuvenileOutmigrantsID) %>%
       summarise(TotalNatural = round(sum(SmoltEq)),
                 SE_SmEq = sqrt(sum(SE_SmEq^2)),
                 TotalNaturalLowerLimit = round(TotalNatural - qnorm(1-alpha/2)*SE_SmEq),
                 TotalNaturalUpperLimit = round(TotalNatural + qnorm(1-alpha/2)*SE_SmEq),
-                Comments = paste0('Only includes lifestages: ', toString(Lifestage)),
+                Comments = paste0('Includes lifestages: ', toString(Lifestage)),
                 LastUpdated = max(LastUpdated),
                 UpdDate = max(UpdDate),
                 TotalNaturalAlpha = alpha) %>%
