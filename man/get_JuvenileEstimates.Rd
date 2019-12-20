@@ -5,7 +5,7 @@
 \title{Summarize Juvenile Abundance and Survival Metrics}
 \usage{
 get_JuvenileEstimates(
-  alpha = c(0.05, 0.1),
+  alpha = c("0.05", "0.10"),
   cdms_url = "https://cdms.nptfisheries.org"
 )
 }
@@ -30,5 +30,4 @@ Download juvenile abundance and survival estimates from NPT's
 \examples{
 cdmsR::cdmsLogin('your_username', 'your_password')
 get_JuvenileEstimates()
-
 }

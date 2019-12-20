@@ -22,11 +22,11 @@
 #' @examples
 #' cdmsR::cdmsLogin('your_username', 'your_password')
 #' get_JuvenileEstimates()
-#'
-get_JuvenileEstimates <- function(alpha = c(0.05, 0.10),
+
+get_JuvenileEstimates <- function(alpha = c('0.05', '0.10'),
                               cdms_url = 'https://cdms.nptfisheries.org'){
 
-  alpha <- match.arg(alpha)
+  alpha <- as.numeric(match.arg(alpha))
 
   if(!requireNamespace("cdmsR", quietly = TRUE)){
     stop("Package \"cdmsR\" is needed for this function to work.  Please install it.",
@@ -43,22 +43,21 @@ get_JuvenileEstimates <- function(alpha = c(0.05, 0.10),
 
   a_df <- a_raw %>%
     filter(Lifestage != 'Total') %>%
-    #filter(Origin == 'Natural') %>%
     select(LocationLabel, Species, Run, Origin, MigratoryYear, Lifestage, StartDate, EndDate, Period, Abundance, SE_A = StdError, Lower95_A = Lower95, Upper95_A = Upper95, EffDt_A = EffDt, Comments_A = Comments)
 
   s_df <- s_raw %>%
     select(LocationLabel, Species, Run, Origin, MigratoryYear, SampleType, TagSite, RearingVessel,
            ReleaseType, ReleaseGroup, AdClipped, Lifestage, SurvivalTo, Survival, SE_S = StdError, Lower95_S = Lower95, Upper95_S = Upper95, EffDt_S = EffDt, Comments_S = Comments)
 
-  #tmp_a <- anti_join(a_df, s_df)
-  #tmp_s <- anti_join(s_df, a_df)
-
   df <- full_join(a_df, s_df, by = c("LocationLabel", "Species", "Run", "Origin", "MigratoryYear", "Lifestage")) %>%
   mutate(EffDt_A = lubridate::ymd_hms(EffDt_A),
          EffDt_S = lubridate::ymd_hms(EffDt_S),
          Comments = paste0('Abundance comments: ',Comments_A,'; ','Suvival comments: ',Comments_S))
 
-  detail <- df %>%
+  ests <- df %>%
+    mutate(tmpL = ifelse(Lifestage%in%c('YOY', 'Parr'),'YOY/Parr',Lifestage)) %>%
+    group_by(LocationLabel, Species, Run, Origin, tmpL, MigratoryYear) %>%
+    mutate(Survival = min(Survival,na.rm=TRUE)) %>%
     mutate(SmoltEq = round(Abundance * Survival,0),
            SE_SmEq = error_propagation(fx = 'product',type= "both_random", x = Abundance, se.x = SE_A,
                                         y = Survival, se.y = SE_S),
@@ -68,11 +67,11 @@ get_JuvenileEstimates <- function(alpha = c(0.05, 0.10),
            Abundance_alpha = alpha,
            Survival_alpha = alpha,
            SmoltEq_alpha = alpha) %>%
-    mutate_at(vars(contains('_SmEq')),round, digits =2) %>%
+    mutate_at(vars(contains('_SmEq')),round, digits =0) %>%
     rowwise() %>%
     mutate(LastUpdated = max(c(EffDt_A, EffDt_S), na.rm = TRUE)) %>%
     ungroup() %>%
     select(-EffDt_A, -EffDt_S, -Comments_A, -Comments_S)
 
-  return(detail)
+  return(ests)
 }

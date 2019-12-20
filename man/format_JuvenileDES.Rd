@@ -6,13 +6,13 @@
 \usage{
 format_JuvenileDES(
   df = NULL,
-  alpha = c(0.05, 0.1),
+  alpha = c("0.05", "0.10"),
   odbc_connection,
   cdms_url = "https://cdms.nptfisheries.org"
 )
 }
 \arguments{
-\item{df}{dataframe output from \code{get_JuvenileEstimates}.}
+\item{df}{\code{lifestage} dataframe output from \code{get_JuvenileEstimates}.}
 
 \item{alpha}{Type I error rate. Default is set at 0.05 to produce 95\%
 confidence intervals.}

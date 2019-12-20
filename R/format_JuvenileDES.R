@@ -8,8 +8,7 @@
 #'   supplied a connection to \url{https://cdms.nptfisheries.org} using
 #'   \code{cdmsR::cdmsLogin()} is also required.
 #'
-#'
-#' @param df dataframe output from \code{get_JuvenileEstimates}.
+#' @param df \code{lifestage} dataframe output from \code{get_JuvenileEstimates}.
 #'
 #' @param alpha Type I error rate. Default is set at 0.05 to produce 95\%
 #'   confidence intervals.
@@ -32,11 +31,11 @@
 #' format_JuvenileDES(df, odbc_connection = con)
 
 format_JuvenileDES <- function(df = NULL,
-                               alpha = c(0.05, 0.10),
+                               alpha = c('0.05', '0.10'),
                                odbc_connection,
                                cdms_url = 'https://cdms.nptfisheries.org'){
 
-  alpha = match.arg(alpha)
+  alpha <- as.numeric(match.arg(alpha))
   con <- odbc_connection
 
   if(class(con) != 'RODBC'){
