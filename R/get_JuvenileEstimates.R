@@ -54,7 +54,8 @@ get_JuvenileEstimates <- function(alpha = c('0.05', '0.10'),
          Upper95_A = Abundance + qnorm(1-alpha/2)*SE_A,
          EffDt_A = max(EffDt),
          Comments_A = min(Comments)) %>%
-    mutate(Lower95_A = ifelse(Lower95_A < 0, 0, Lower95_A))
+    mutate(Lower95_A = ifelse(Lower95_A < 0, 0, Lower95_A)) %>%
+    mutate_if(vars(contains('95')), round, digits = 0)
 
   s_df <- s_raw %>%
     mutate(Lifestage = ifelse(Lifestage%in%c('YOY', 'Parr'),'YOY/Parr',Lifestage)) %>%
