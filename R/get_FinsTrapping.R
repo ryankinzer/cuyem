@@ -43,6 +43,8 @@ get_FinsTrapping <- function(facility, odbc_connection){
            .f = function(x){
              qry <- paste0("SELECT * FROM FINS_all_trapping WHERE Facility = '", x[1],"'")
 
+             # if(!is.null(facility))
+
              # if(!is.null(species)){
              #   qry <- paste0(qry," AND Species = '", species, "'")
              # }

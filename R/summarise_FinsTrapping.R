@@ -34,7 +34,8 @@ summarise_FinsTrapping <- function(df){
                       disposition == 'Released' &
                         grepl('Above|Upstream', release_site)  &
                         !is.na(applied_marks) ~ TRUE,
-                      TRUE~FALSE))
+                      TRUE~FALSE),
+           recap = as.logical(recap))
 
   # high level summary for tuesday call: count of species, run, origin, sex, living status, purpose, dispostion, release site
 
@@ -43,42 +44,18 @@ summarise_FinsTrapping <- function(df){
     group_by(trap_year, facility, trap, species, run, origin, sex, age_designation, living_status, disposition, purpose) %>%
     summarise(count = n())
 
-  # graphics
-  # tmp <- sum_new %>%
-  #   filter(trap_year == '2019') %>%
-  #   filter(species == 'Chinook') %>%
-  #   filter(grepl('Hatchery', origin)) %>%
-  #   group_by(facility, trap) %>%
-  #   mutate(p = count/sum(count)) %>%
-  #   ggplot(aes(x = '', y = p, colour = purpose, fill = purpose)) +
-  #   geom_bar(stat = 'identity',  width = 1) +
-  #   scale_fill_viridis_d() +
-  #   scale_colour_viridis_d() +
-  #   facet_wrap(~trap, labeller = label_wrap_gen(width = 15), ncol = 9) + # labeller = label_wrap_gen(width = 20),
-  #   coord_polar("y", start = 0) +
-  #   guides(fill = guide_legend(nrow = 4)) +
-  #   labs(x = '',
-  #        y = '',
-  #        fill = '',
-  #        colour = '',
-  #        title = 'Purpose of Returning Hatchery Chinook Salmon to Snake River Basin Traps',
-  #        caption = 'Supporting data was collected in 2019 and available at www.finsnet.org.') +
-  #   theme(axis.text = element_blank(),
-  #         axis.ticks = element_blank(),
-  #         panel.grid  = element_blank(),
-  #         panel.background = element_blank(),
-  #         legend.position = 'bottom')
-  #
-  # ggsave('./purpose.png', tmp, height = 8.5, width = 11)
-
-  # captued / released/ marked
-  marked <- df %>%
+  # captued and released (n1) / recaptured (n2) / marked recaptured (m2)
+  n1 <- df %>%
     filter(recap != TRUE) %>%
-    #filter(disposition == 'Released' & grepl('Above Weir', release_site)) %>%
     filter(marked) %>%
-    group_by(trap_year, facility, trap, species, run, age_designation, age_criteria_start_length, age_criteria_end_length, applied_marks) %>%
-    summarise(marked = n()) #%>%
-    #rename(marks = applied_marks)
+    filter(disposition == 'Released' & grepl('Above Weir', release_site)) %>%
+    group_by(trap_year, facility, trap, species, run, origin, age_designation, age_criteria_start_length, age_criteria_end_length, applied_marks) %>%
+    summarise(n1= n())
+
+  n2 <- df %>%
+    filter(recap == TRUE) %>%
+    group_by(trap_year, facility, trap, species, run, origin, age_designation, age_criteria_start_length, age_criteria_end_length, existing_marks) %>%
+    summarise(n2 = n())
 
   # tmp <- marked %>%
   #   filter(is.na(applied_marks))
@@ -89,13 +66,14 @@ summarise_FinsTrapping <- function(df){
   #   filter(grepl('Johnson', trap)) %>%
   #   filter(trap_year == 2017)
 
-  recapture <- df %>%
-    filter(recap) %>%
-    group_by(trap_year, facility, trap, species, run, age_designation, age_criteria_start_length, age_criteria_end_length, existing_marks) %>%
-    summarise(recaptured = n()) #%>%
-    #rename(marks = existing_marks)
+  # recapture <- df %>%
+  #   filter(recap == TRUE) %>%
+  #   group_by(trap_year, facility, trap, species, run, age_designation, age_criteria_start_length, age_criteria_end_length, existing_marks) %>%
+  #   summarise(recaptured = n()) #%>%
+  #   #rename(marks = existing_marks)
+  #
+  # mr_df <- left_join(marked, recapture,
+  #                    by = c("trap_year", "facility", "trap", "species", "run", "age_designation", "age_criteria_start_length", "age_criteria_end_length"))
 
-  mr_df <- left_join(marked, recapture)
-
-  return(list(sum_new, mr_df))
+  return(list(sum_new, n1, n2))
 }

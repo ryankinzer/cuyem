@@ -83,6 +83,9 @@ format_JuvenileDES <- function(df = NULL,
     left_join(detail_meta, by = c('LocationLabel', 'Species' = 'CommonName', 'Run'))
 
   detail_des <- detail_df %>%
+    mutate(NullRecord = case_when(
+      is.na(Abundance) | is.na(Survival) ~ 'Yes',
+      TRUE ~ 'No')) %>%
     select(ID,
            JuvenileOutmigrantsID,
            Location = LocationLabel,
