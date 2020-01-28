@@ -1,4 +1,4 @@
-#' @title Format Natural Origin Spawner Abundance DES tables.
+#' @title Format Natural Origin Spawner Abundance (NOSA) DES tables.
 #'
 #' @description Format NOSA data generated from \code{get_NOSAestimates}
 #'   for the coordinated assessments natural origin spawner abundance DES
@@ -52,16 +52,12 @@ format_NOSAdes <- function(df = NULL,
   # filter NOSA data for CAX-specific records
   tmp_df <- df %>%
     filter(Origin == 'Natural') %>%
-    # filter()
+    # filter(XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX) %>%
     mutate_all(as.character) %>%
     group_by(LocationLabel, Species, Run, Origin, SpawningYear) %>%
     rowwise() %>%
     mutate(ID = guid(uppercase = FALSE)) %>%
     ungroup()
-
-
-  # TESTING stuff
-  # con <- RODBC::odbcConnect('CDMS_DEV', uid = 'guest', pwd = 'guest')
 
   # get CAX metadata
   nosa_meta <- RODBC::sqlFetch(con, 'CAX_NOSA_meta') %>%
