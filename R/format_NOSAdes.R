@@ -396,6 +396,18 @@ missing_pops <- base_df %>%
 8   SREFS-s
 
 
+dupes <- nosa_des %>%
+  group_by(ActivityId) %>%
+  summarize(Count = n()) %>%
+  filter(Count == 2) %>%
+  pull(ActivityId)
+
+
+dupes_trt <- nosa_des %>%
+  filter(ActivityId %in% dupes) #%>%
+  select(ActivityId, CommonPopName)
+
+
 
 library(readxl)
 
