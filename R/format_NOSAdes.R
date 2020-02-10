@@ -98,34 +98,6 @@ format_NOSAdes <- function(df = NULL,
            ValidEstimate) # for NullRecord field.
 
   # IPTDS: Age Proportions ----
-    # quazi-spread and squish"
-  # age_range <- sort(unique(base_df$Age))
-  #
-  # ageprops_tmp <- age_range %>%
-  #                       map_df(.f = function(x) {
-  #                          age_tmp <- base_df %>%
-  #                            filter(Variable == 'Age Proportion',
-  #                                   Age == x) %>%
-  #                            group_by(SpawnYear, Species, Run, TRT_POPID) %>%
-  #                            select(TRT_POPID, SpawnYear, Species, Run, Estimate, LowerCI, UpperCI)
-  #
-  #                          names(age_tmp)[5:7] <- c(paste0('Age', x, 'Prop'),
-  #                                                   paste0('Age', x, 'PropLowerLimit'),
-  #                                                   paste0('Age', x, 'PropUpperLimit'))
-  #
-  #                          return(age_tmp)
-  #                          })
-  #
-  # ageprops_tmp <- ageprops_tmp %>%
-  #   group_by(SpawnYear, Species, Run, TRT_POPID) %>%
-  #   summarize_all(mean, na.rm=TRUE) %>%
-  #   mutate(AgePropAlpha = alpha) %>%
-  #   ungroup() %>%
-  #   mutate_all(as.character)
-  #
-  # ageprops_df <- replace(ageprops_tmp, is.na(ageprops_tmp), NA) # removes NaN values
-
-  # pivot wider
   ageprops_df <- pivot_wider(data= base_df %>%
     filter(Variable == 'Age Proportion') %>%
       mutate(Age = paste0('Age', Age, 'Prop')) %>%
@@ -137,9 +109,9 @@ format_NOSAdes <- function(df = NULL,
     mutate(AgePropAlpha = alpha) %>%
     mutate_all(as.character)
 
-names(ageprops_df) <- gsub('Estimate', '', names(ageprops_df))
-names(ageprops_df) <- if_else(grepl('LowerCI', names(ageprops_df))==TRUE, paste0(gsub('LowerCI', '', names(ageprops_df)), 'LowerLimit'), names(ageprops_df))
-names(ageprops_df) <- if_else(grepl('UpperCI', names(ageprops_df))==TRUE, paste0(gsub('UpperCI', '', names(ageprops_df)), 'UpperLimit'), names(ageprops_df))
+  names(ageprops_df) <- gsub('Estimate', '', names(ageprops_df))
+  names(ageprops_df) <- if_else(grepl('LowerCI', names(ageprops_df))==TRUE, paste0(gsub('LowerCI', '', names(ageprops_df)), 'LowerLimit'), names(ageprops_df))
+  names(ageprops_df) <- if_else(grepl('UpperCI', names(ageprops_df))==TRUE, paste0(gsub('UpperCI', '', names(ageprops_df)), 'UpperLimit'), names(ageprops_df))
 
     # add missing age proportion fields
   age_fields <- c('Age2Prop', 'Age2PropLowerLimit', 'Age2PropUpperLimit',
@@ -170,6 +142,8 @@ names(ageprops_df) <- if_else(grepl('UpperCI', names(ageprops_df))==TRUE, paste0
   # IPTDS: NOSA DES table
   nosa_des <- NOSAIJ_df %>%
     left_join(ageprops_df, by = c('SpawnYear', 'Species', 'Run', 'TRT_POPID')) %>%
+    #  mutate to be removed once DABOM is run again (this fixed the SF Salmon mainstem trtpop)
+    mutate(TRT_POPID = if_else(TRT_POPID == 'SFMAI', 'SFSMA', TRT_POPID)) %>%
     mutate(Run = case_when( # align CDMS run with CAX run types
       Species == 'Steelhead' ~ 'summer',  # all steelhead -> summer
       TRT_POPID == 'CRLAP' ~ 'unknown',
@@ -351,91 +325,6 @@ names(ageprops_df) <- if_else(grepl('UpperCI', names(ageprops_df))==TRUE, paste0
            CompilerRecordID,
            Publish)
 
-  # missing <- nosa_des %>%
-  #   filter(is.na(RecoveryDomain)) %>%
-  #   pull(ActivityId)
-
-  # ('48593', '48590', '48586', '48585', '48463', '48460', '48456', '48455', '48338', '48336', '48332', '48313')
-  #
-  # SELECT [TRT_POPID]
-  # FROM [CDMS_DEV].[dbo].[IPTDS_vw]
-  # WHERE ActivityId IN   ('48593', '48590', '48586', '48585', '48463', '48460', '48456', '48455', '48338', '48336', '48332', '48313')
-  # AND Variable = 'Population Escapement'
-  # ORDER BY TRT_POPID
-  #
-  # GRUMA
-  # SRVAL
-  # SEMEA
-  # GRLOS
-  # GRUMA-s
-  # GRWAL-s
-  # MFBIG-s
-  # SREFS-s
-
   return(nosa_des)
-
 }
 
-missing <- nosa_des %>%
-  filter(is.na(RecoveryDomain)) %>%
-  pull(ActivityId)
-
-missing_pops <- base_df %>%
-  filter(ActivityId %in% missing,
-         Variable == 'Population Escapement') %>%
-  distinct(TRT_POPID)
-
-# These are not matching to the NOSA_meta for some reason
-1   GRUMA
-2   SRVAL
-3   SEMEA
-4   GRLOS
-5   GRUMA-s
-6   GRWAL-s
-7   MFBIG-s
-8   SREFS-s
-
-
-dupes <- nosa_des %>%
-  group_by(ActivityId) %>%
-  summarize(Count = n()) %>%
-  filter(Count == 2) %>%
-  pull(ActivityId)
-
-
-dupes_trt <- nosa_des %>%
-  filter(ActivityId %in% dupes) #%>%
-  select(ActivityId, CommonPopName)
-
-
-
-library(readxl)
-
-nosa_csv <-read_csv(file = 'C:/MyFiles/NOSA_metadata.csv')
-
-list <- nosa_csv %>%   # 59 long.
-  pull(ICTRT_Info_fk)
-
-ictrt <- RODBC::sqlFetch(con, 'ICTRT_Info')
-
-all_ictrt_pops <- ictrt %>%   # returning 52 obs
-  filter(ID %in% list) %>%
-  distinct(TRT_POPID)
-
-
-
-
-
-data_pops <- base_df %>%
-  filter(Variable == 'Population Escapement') %>%
-  distinct(TRT_POPID) #%>%
-# pull(TRT_POPID)
-
-
-notin <- anti_join(all_ictrt_pops, data_pops, by = 'TRT_POPID')   # MFCAM, SFSMA
-notin2 <- anti_join(data_pops, all_ictrt_pops, by= 'TRT_POPID')   # SFMAI, SEMEA  - pops in data missing in ICTRT
-
-
-
-mfcam <- base_pops %>%
-  filter(TRT_POPID == 'MFCAM')
