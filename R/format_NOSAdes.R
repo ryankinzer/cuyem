@@ -1,4 +1,4 @@
-#' @title Format Natural Origin Spawner Abundance (NOSA) DES tables.
+#' @title Format Natural Origin Spawner Abundance (NOSA) DES tables for IPTDS.
 #'
 #' @description Format NOSA data generated from \code{get_NOSAestimates}
 #'   for the coordinated assessments natural origin spawner abundance DES
@@ -300,6 +300,7 @@ format_NOSAdes <- function(df = NULL,
            Age11PlusPropLowerLimit,
            Age11PlusPropUpperLimit,
            AgePropAlpha,
+
            ProtMethName,
            ProtMethURL,
            ProtMethDocumentation,
