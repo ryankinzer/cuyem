@@ -10,13 +10,12 @@
 #'
 #' @param df \code{lifestage} dataframe output from \code{get_JuvenileEstimates}.
 #'
+#' @param detail_meta CA DES juvenile outmigrant detail metadata
+#'
+#' @param smoltEq_meta CA DES juvenile outmigrant metadata
+#'
 #' @param alpha Type I error rate. Default is set at 0.05 to produce 95\%
 #'   confidence intervals.
-#'
-#' @param odbc_connection an open odbc channel to CDMS database
-#'
-#' @param cdms_host URL for CDMS website. The default is the Nez Perce Tribe's
-#'   data repository \url{https://cdms.nptfisheries.org}.
 #
 #' @return a list with coordinated assessments juvenile outmigrant and juvenile outmigrant detail DES tables
 #'
@@ -26,28 +25,34 @@
 #'
 #' @examples
 #' cdmsR::cdmsLogin('your_username', 'your_password')
-#' df <- get_JuvenileEstimates()
+#' df <- get_JUVests()
 #' con <- RODBC::odbcConnect(dsn = 'data source', uid = 'your_username', pwd = 'your_password')
 #' format_JuvenileDES(df, odbc_connection = con)
 
-format_JuvenileDES <- function(df = NULL,
-                               alpha = c('0.05', '0.10'),
-                               odbc_connection,
-                               cdms_url = 'https://cdms.nptfisheries.org'){
+format_JuvenileDES <- function(df,
+                               detail_meta,
+                               smoltEq_meta,
+                               alpha = c('0.05', '0.10')){
+                              # cdms_host = 'https://npt-cdms.nezperce.org'){
 
   alpha <- as.numeric(match.arg(alpha))
-  con <- odbc_connection
-
-  if(class(con) != 'RODBC'){
-    stop('An \"odbc\" connection is not identified. A connection with the
-    back-end CDMS database is needed for this function to work. Please
-    provide a valid connection using package \"RODBC\".')
-  }
+  # con <- odbc_connection
+  #
+  # if(class(con) != 'RODBC'){
+  #   stop('An \"odbc\" connection is not identified. A connection with the
+  #   back-end CDMS database is needed for this function to work. Please
+  #   provide a valid connection using package \"RODBC\".')
+  # }
 
   # get abundance and smolt data from CDMS
-  if(is.null(df)){
-    df <- get_JuvenileEstimates(alpha, cdms_url)
+  # if(is.null(df)){
+  #   df <- get_JUVests(alpha, cdms_host)
+  # }
+
+  if(is.null(df) || is.null(detail_meta) || is.null(smoltEq_meta)){
+    stop("Juvenile data and the metadata is required.")
   }
+
   # filter for records specific to CAX
   tmp_df <- df %>%
     filter(Origin == 'Natural') %>%
@@ -61,13 +66,13 @@ format_JuvenileDES <- function(df = NULL,
     ungroup()
 
   # get CAX metadata
-  detail_meta <- RODBC::sqlFetch(con, 'CAX_JuvOutmigrantsDetail_meta') %>%
-    mutate_all(as.character) %>%
-    select(-ID, -JuvenileOutmigrantsID)
-
-  smoltEq_meta <- RODBC::sqlFetch(con, 'CAX_JuvOutmigrants_meta') %>%
-    mutate_all(as.character) %>%
-    select(-ID)
+  # detail_meta <- RODBC::sqlFetch(con, 'CAX_JuvOutmigrantsDetail_meta') %>%
+  #   mutate_all(as.character) %>%
+  #   select(-ID, -JuvenileOutmigrantsID)
+  #
+  # smoltEq_meta <- RODBC::sqlFetch(con, 'CAX_JuvOutmigrants_meta') %>%
+  #   mutate_all(as.character) %>%
+  #   select(-ID)
 
   # format detail table
 

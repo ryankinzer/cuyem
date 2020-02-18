@@ -6,18 +6,21 @@
 \usage{
 format_JuvenileDES(
   df = NULL,
+  detail_meta,
+  smoltEq_meta,
   alpha = c("0.05", "0.10"),
-  odbc_connection,
-  cdms_url = "https://cdms.nptfisheries.org"
+  cdms_host = "https://npt-cdms.nezperce.org"
 )
 }
 \arguments{
 \item{df}{\code{lifestage} dataframe output from \code{get_JuvenileEstimates}.}
 
+\item{detail_meta}{CA DES juvenile outmigrant detail metadata}
+
+\item{smoltEq_meta}{CA DES juvenile outmigrant metadata}
+
 \item{alpha}{Type I error rate. Default is set at 0.05 to produce 95\%
 confidence intervals.}
-
-\item{odbc_connection}{an open odbc channel to CDMS database}
 
 \item{cdms_host}{URL for CDMS website. The default is the Nez Perce Tribe's
 data repository \url{https://cdms.nptfisheries.org}.}
@@ -36,7 +39,7 @@ Format juvenile abundance and survival data generated from
 }
 \examples{
 cdmsR::cdmsLogin('your_username', 'your_password')
-df <- get_JuvenileEstimates()
+df <- get_JUVests()
 con <- RODBC::odbcConnect(dsn = 'data source', uid = 'your_username', pwd = 'your_password')
 format_JuvenileDES(df, odbc_connection = con)
 }

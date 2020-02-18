@@ -1,9 +1,15 @@
 #' @title Error Propagation
-#' @description Propagate error/uncertainty using variance properties for addition, subtraction, and multiplication and the first order Taylor expansion (i.e., delta method) for the division of two random variables.
-
-#' @param fx the function being applied; \code{c("addition", "subtraction", "product","division")}.
 #'
-#' @param type set both \code{x} and \code{y} as random variables (\code{type = "both_random"}) or define \code{y} as a constant (\code{type = "y_constant"}).
+#' @description Propagate uncertainty using variance properties for
+#'   addition, subtraction, and multiplication and the first order Taylor
+#'   expansion (i.e., delta method) for the division of two random variables.
+#'
+#' @param fx the function being applied; \code{c("addition", "subtraction",
+#'   "product","division")}.
+#'
+#' @param type set both \code{x} and \code{y} as random variables (\code{type =
+#'   "both_random"}) or define \code{y} as a constant (\code{type =
+#'   "y_constant"}).
 #'
 #' @param x vector of random variables
 #'
@@ -13,10 +19,12 @@
 #'
 #' @param se.y standard error of \code{y}
 #'
-#' @param alpha Type I error rate. Default is set at 0.05 to produce 95\%
+#' @param alpha type I error rate.  Default is set at 0.05 to produce 95\%
 #'   confidence intervals.
 #'
-#' @return a vector of standard errors based on the supplied arguements.
+#' @export
+#'
+#' @author Ryan N. Kinzer
 #'
 #' @examples
 #' x <- rnorm(10, 0, 1)
