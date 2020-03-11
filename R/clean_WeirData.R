@@ -16,6 +16,10 @@ clean_weirData <- function(data){
 
   # create date/time fields, and mark-recapture fields
 
+  #names(data) <- gsub(' ','_',tolower(names(data)))
+
+  #data <- mutate_all(as.character)
+
   trap_df <- data %>%
     mutate(trapped_date = lubridate::mdy(trapped_date),
            trap_year = lubridate::year(trapped_date)) %>%
@@ -28,6 +32,8 @@ clean_weirData <- function(data){
                                   TRUE ~ FALSE)) %>%
     mutate(release_dwn = case_when(disposition == 'Released' &
                                      grepl('Below|Downstream', release_site) ~ TRUE,
+                                   living_status %in% c('DOA', 'TrapMort') &
+                                     grepl('Below|Downstream', moved_to) ~ TRUE, # added to catch downstream morts
                                    TRUE ~ FALSE)) %>%
     mutate(marked = case_when(release_up & grepl('OP', applied_marks) ~ TRUE,
                               release_up & grepl('OP', applied_tags) ~ TRUE,

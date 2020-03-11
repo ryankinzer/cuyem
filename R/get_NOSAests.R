@@ -13,27 +13,56 @@
 #' get_NOSAests()
 get_NOSAests <- function(redd_data, carcass_data, mr_ests){
 
-  redd_dat <- redd_data
-  car_dat <- carcass_data
-  chn_mr <- mr_ests
+  r_df <- redd_data %>% filter(ReportingGroup != 'Meadow Creek') %>%
+    mutate(r_EffDt = lubridate::ymd_hms(EffDt),
+           r_EffDt = if_else(is.na(r_EffDt), lubridate::ymd_hms('19000101 00:00:00'), r_EffDt)) %>%
+    ungroup() %>%
+    select(-EffDt)
+
+  c_df <- carcass_data %>% filter(ReportingGroup != 'Meadow Creek') %>%
+    mutate(c_EffDt = lubridate::ymd_hms(EffDt),
+           c_EffDt = if_else(is.na(c_EffDt), lubridate::ymd_hms('19000101 00:00:00'), c_EffDt)) %>%
+    ungroup() %>%
+    select(-EffDt)
+
+  mr_df <- mr_ests
+
+  # get effective date
+
+  eff_dt <- r_df %>%
+    filter(Species == 'Chinook salmon',
+           Run == 'Spring/summer') %>%
+    group_by(MPG, POP_NAME, TRT_POPID, Species, Run, SurveyYear) %>%
+    summarise(r_EffDt = max(r_EffDt, na.rm = TRUE)) %>%
+    left_join(c_df %>%
+                filter(Species == 'Chinook salmon',
+                       Run == 'Spring/summer') %>%
+                group_by(MPG, POP_NAME, TRT_POPID, Species, Run, SurveyYear) %>%
+                summarise(c_EffDt = max(c_EffDt, na.rm = TRUE)),
+              by = c('MPG', 'POP_NAME', 'TRT_POPID', 'Species', 'Run', 'SurveyYear')) %>%
+    rowwise() %>%
+    mutate(EffDt = max(r_EffDt, c_EffDt, na.rm = TRUE)) %>%
+    ungroup() %>%
+    select(-r_EffDt, -c_EffDt)
 
   # get redd nums
-  ch_pop_df <- #redd_sum %>%
-    redd_dat %>%
-    select(MPG:SurveyDate, SurveyYear, Pass, AboveWeir, NewRedds) %>%
-    distinct() %>%
+  ch_pop_df <-
+    r_df %>%
+    #select(MPG:SurveyDate, SurveyYear, Pass, AboveWeir, NewRedds) %>%
+    #distinct() %>%
     filter(Species == 'Chinook salmon',
            Run == 'Spring/summer') %>%
     mutate(AboveWeir = case_when(AboveWeir == 'Yes' ~ 'U',
                                  TRUE ~ 'D')) %>%
-    group_by(MPG, POP_NAME, TRT_POPID, Species, Run, SurveyYear, AboveWeir) %>%
-    summarise(n = sum(NewRedds, na.rm = TRUE)) %>%
-    pivot_wider(names_from = AboveWeir, values_from = n, names_prefix = 'R_', values_fill = list(n = 0))
+    #group_by(MPG, POP_NAME, TRT_POPID, Species, Run, SurveyYear, AboveWeir) %>%
+    #summarise(n = sum(NewRedds, na.rm = TRUE)) %>%
+    sum_Redds(MPG, POP_NAME, TRT_POPID, Species, Run, SurveyYear, AboveWeir) %>%
+    pivot_wider(names_from = AboveWeir, values_from = Redds, names_prefix = 'R_', values_fill = list(Redds = 0))
 
   # get origin sums
   ch_pop_df <- ch_pop_df %>%
     left_join(
-      car_dat %>%
+      c_df %>%
         filter(Species == 'Chinook salmon',
                Run == 'Spring/summer') %>%
         filter(Origin != 'Unknown') %>%
@@ -50,7 +79,7 @@ get_NOSAests <- function(redd_data, carcass_data, mr_ests){
 
   # get sex sums
   ch_pop_df <- ch_pop_df %>%
-    left_join(car_dat %>%
+    left_join(c_df %>%
                 filter(Species == 'Chinook salmon',
                        Run == 'Spring/summer') %>%
                 mutate(Sex = str_squish(Sex)) %>%
@@ -69,7 +98,7 @@ get_NOSAests <- function(redd_data, carcass_data, mr_ests){
 
   # get prespawn sums
   ch_pop_df <- ch_pop_df %>%
-    left_join(car_dat %>%
+    left_join(c_df %>%
                 filter(Species == 'Chinook salmon',
                        Run == 'Spring/summer') %>%
                 mutate(Sex = str_squish(Sex)) %>%
@@ -111,29 +140,38 @@ get_NOSAests <- function(redd_data, carcass_data, mr_ests){
                 select_all(.funs = funs(paste0("Psp_D_",.))))
 
   # append weir estimates
-  weir_pop <- redd_dat %>% filter(Species == 'Chinook salmon',
-                                  Run == 'Spring/summer') %>%
+  weir_pop <- r_df %>% filter(Species == 'Chinook salmon',
+                              Run == 'Spring/summer') %>%
     select(Species, POP_NAME, StreamName) %>% distinct()
 
   ch_pop_df <- ch_pop_df %>%
     left_join(
-      chn_mr %>%
+      mr_df %>%
         ungroup() %>%
         left_join(weir_pop, by = c('stream' = 'StreamName')) %>%
         mutate(WeirRemoval = Ponded + Disposed + Transferred) %>%
         mutate(Harvest = 0) %>%
         select(POP_NAME, Species, SurveyYear = trap_year, Weir = stream, WeirRemoval, Harvest, NOBroodStockRemoved, n1, n2, m2, N_U = N, SE_N_U = SE, lwr_N_U = lwr, upr_N_U = upr ),
-      by = c('SurveyYear', 'POP_NAME', 'Species'))
+      by = c('SurveyYear', 'POP_NAME', 'Species')) %>%
+    mutate(tmp_f = case_when((n_Female_D + n_Male_D) <= 1 ~ F_p,
+                             (F_D_SE/F_D_p) >= .5 ~ F_p,
+                             TRUE ~ F_D_p),
+           tmp_f_se = case_when((n_Female_D + n_Male_D) <= 1 ~ F_SE,
+                                (F_D_SE/F_D_p) >= .5 ~ F_SE,
+                                TRUE ~ F_D_SE))
+
+
   # Do we need weir efficiency, marking rate and carcass recovery rate?
 
   ch_pop_df <- ch_pop_df %>%
     bind_cols(est_abundance_sgs(ch_pop_df$R_D,
-                                ch_pop_df$F_p, #F_D_p,
-                                ch_pop_df$F_SE, #F_D_SE,
-                                ch_pop_df$Psp_p, #Psp_D_p,
-                                ch_pop_df$Psp_SE #Psp_D_SE
+                                ch_pop_df$tmp_f,
+                                ch_pop_df$tmp_f_se,
+                                ch_pop_df$Psp_p,
+                                ch_pop_df$Psp_SE
     ) %>%
-      select(N_D = Nhat, SE_N_D = SE_Nhat, lwr_N_D = lwr_N, upr_N_D = upr_N))
+      select(N_D = Nhat, SE_N_D = SE_Nhat, lwr_N_D = lwr_N, upr_N_D = upr_N)) %>%
+    select(-tmp_f, -tmp_f_se)
 
   ch_pop_df <- ch_pop_df %>%
     mutate(WeirRemoval = ifelse(is.na(WeirRemoval), 0, WeirRemoval),
@@ -193,7 +231,7 @@ get_NOSAests <- function(redd_data, carcass_data, mr_ests){
     )
 
 
-  ch_car_age <- car_dat %>%
+  ch_car_age <- c_df %>%
     filter(Species == 'Chinook salmon',
            Run == 'Spring/summer',
            Origin == 'Natural') %>%
@@ -209,7 +247,7 @@ get_NOSAests <- function(redd_data, carcass_data, mr_ests){
     pivot_wider(names_from = BestAge, values_from = n:upr) %>%
     mutate_each(funs(replace(., which(is.na(.)), 0)))
 
-  jack_frac_origin <- car_dat %>%
+  jack_frac_origin <- c_df %>%
     filter(Species == 'Chinook salmon',
            Run == 'Spring/summer',
            Origin != 'Unknown') %>%
@@ -230,7 +268,7 @@ get_NOSAests <- function(redd_data, carcass_data, mr_ests){
     select(-n_HOSJF, -n_NOSJF)
 
 
-  jack_frac_total <- car_dat %>%
+  jack_frac_total <- c_df %>%
     filter(Species == 'Chinook salmon',
            Run == 'Spring/summer',
            Origin != 'Unknown') %>%
@@ -245,22 +283,17 @@ get_NOSAests <- function(redd_data, carcass_data, mr_ests){
     filter(BestAge == 'JF') %>%
     select(MPG:SurveyYear, JF = p, JF_SE = SE)
 
-  ch_car_age <- left_join(ch_car_age, jack_frac_total) %>%
-    left_join(jack_frac_origin)
+  ch_car_age <- left_join(ch_car_age, jack_frac_total,
+                          by = c('MPG', 'POP_NAME', 'TRT_POPID', 'Species', 'Run', 'SurveyYear')) %>%
+    left_join(jack_frac_origin,
+              by = c('MPG', 'POP_NAME', 'TRT_POPID', 'Species', 'Run', 'SurveyYear'))
 
 
-  ch_pop_df <- left_join(ch_pop_df, ch_car_age)
+  ch_pop_df <- left_join(ch_pop_df, ch_car_age,
+                         by = c('MPG', 'POP_NAME', 'TRT_POPID', 'Species', 'Run', 'SurveyYear'))
 
   ch_pop_df <- ch_pop_df %>%
-    mutate(TSAej = TSAij * (1-JF),
-           TSAej_SE = error_propagation(fx = 'product', type = 'both_random',
-                                        x = TSAij,
-                                        se.x = TSAij_SE,
-                                        y = (1-JF),
-                                        se.y = JF_SE),
-           TSAej_lwr = TSAej - 1.96*TSAej_SE,
-           TSAej_upr = TSAej + 1.96*TSAej_SE,
-           NOSAej = NOSAij * (1-NOSJF),
+    mutate(NOSAej = NOSAij * (1-NOSJF),
            NOSAej_SE = error_propagation(fx = 'product', type = 'both_random',
                                          x = NOSAij,
                                          se.x = NOSAij_SE,
@@ -268,6 +301,7 @@ get_NOSAests <- function(redd_data, carcass_data, mr_ests){
                                          se.y = SE_NOSJF),
            NOSAej_lwr = NOSAej - 1.96*NOSAej_SE,
            NOSAej_upr = NOSAej + 1.96*NOSAej_SE,
+
            HOSAej = HOSAij * (1-HOSJF),
            HOSAej_SE = error_propagation(fx = 'product', type = 'both_random',
                                          x = HOSAij,
@@ -276,6 +310,16 @@ get_NOSAests <- function(redd_data, carcass_data, mr_ests){
                                          se.y = SE_HOSJF),
            HOSAej_lwr = HOSAej - 1.96*HOSAej_SE,
            HOSAej_upr = HOSAej + 1.96*HOSAej_SE,
+
+           TSAej = NOSAej + HOSAej,
+           TSAej_SE = error_propagation(fx = 'addition', type = 'both_random',
+                                        x = NOSAej,
+                                        se.x = NOSAej_SE,
+                                        y = HOSAej,
+                                        se.y = HOSAej),
+           TSAej_lwr = TSAej - 1.96*TSAej_SE,
+           TSAej_upr = TSAej + 1.96*TSAej_SE,
+
            pHOSej = HOSAej / TSAej,
            pHOSej_SE = error_propagation(fx = 'division', type = 'both_random',
                                          x = HOSAej,
@@ -283,10 +327,14 @@ get_NOSAests <- function(redd_data, carcass_data, mr_ests){
                                          y = TSAej,
                                          se.y = TSAej_SE),
            pHOSej_lwr = pHOSej - 1.96*pHOSej_SE,
-           pHOSej_upr = pHOSej + 1.96*pHOSej_SE)
+           pHOSej_upr = pHOSej + 1.96*pHOSej_SE,
+           pHOSej_lwr = if_else(pHOSej_lwr < 0, 0, pHOSej_lwr))
 
   ch_pop_df <- ch_pop_df %>%
-  mutate_each(funs(replace(., which(is.nan(.)), NA)))
+    mutate_each(funs(replace(., which(is.nan(.)), NA)))
+
+  ch_pop_df <- right_join(eff_dt, ch_pop_df,
+                          by = c('MPG', 'POP_NAME', 'TRT_POPID', 'Species', 'Run', 'SurveyYear'))
 
   return(ch_pop_df)
-  }
+}

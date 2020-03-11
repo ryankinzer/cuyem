@@ -30,7 +30,7 @@
 #' con <- RODBC::odbcConnect(dsn = 'data source', uid = 'your_username', pwd = 'your_password')
 #' format_NOSAdes(df, odbc_connection = con)
 
-format_NOSAdes <- function(df = NULL,
+format_IPTDS_NosaDES <- function(df = NULL,
                            alpha = c('0.05', '0.10'),
                            odbc_connection,
                            cdms_url = 'https://npt-cdms.nptfisheries.org'){

@@ -25,7 +25,7 @@ get_MRests <- function(weir_data, carcass_data = NULL, species = c('Chinook', 'S
     n1 <- w_df %>%
       filter(target_species == species) %>%
       filter(species == 'Steelhead') %>%
-      filter(stream != 'Lostine River') %>%
+      #filter(stream != 'Lostine River') %>%
       filter(marked) %>%
       group_by(trap_year, stream, species) %>%
       summarise(n1= n()) %>%
@@ -34,7 +34,7 @@ get_MRests <- function(weir_data, carcass_data = NULL, species = c('Chinook', 'S
     n2 <- w_df %>%
       filter(target_species == species) %>%
       filter(species == 'Steelhead') %>%
-      filter(stream != 'Lostine River') %>%
+      #filter(stream != 'Lostine River') %>%
       filter(release_dwn) %>%
       group_by(trap_year, stream, species) %>%
       summarise(n2 = n()) %>%
@@ -43,7 +43,7 @@ get_MRests <- function(weir_data, carcass_data = NULL, species = c('Chinook', 'S
     m2 <- w_df %>%
       filter(target_species == species) %>%
       filter(species == 'Steelhead') %>%
-      filter(stream != 'Lostine River') %>%
+      #filter(stream != 'Lostine River') %>%
       filter(recapped == TRUE) %>%
       group_by(trap_year, stream, species) %>%
       summarise(m2 = n()) %>%

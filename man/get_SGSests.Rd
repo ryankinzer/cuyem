@@ -4,18 +4,18 @@
 \alias{get_SGSests}
 \title{Summarize SGS Data}
 \usage{
-get_SGSests(redd_data = NULL, carcass_data = NULL, group)
+get_SGSests(redd_data = NULL, carcass_data = NULL, alpha = 0.05, ...)
 }
 \arguments{
 \item{redd_data}{cleaned redd data}
 
 \item{carcass_data}{cleaned carcass data with best age appended}
 
-\item{group}{variables to group the data}
-
 \item{species}{Chinook or steelhead}
 
 \item{run}{Spring/summer, fall, summer}
+
+\item{group}{variables to group the data}
 }
 \value{
 

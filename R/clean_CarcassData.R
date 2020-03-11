@@ -11,7 +11,7 @@ clean_carcassData <- function(data){
   {if(is.null(data))stop("carcass data must be supplied")}
 
   dat <- data %>%
-    mutate(TransectName = str_split(LocationLabel, ' - ', simplify = TRUE)[,2]) %>%
+    mutate(TransectName = str_split(LocationLabel, 'Transect - ', simplify = TRUE)[,2]) %>%
     left_join(transect_meta, by = c('Species', 'Run', 'StreamName', 'TransectName')) %>%
     mutate(SurveyDate = lubridate::date(lubridate::ymd_hms(SurveyDate)),
            SurveyYear = lubridate::year(SurveyDate),
@@ -25,7 +25,7 @@ clean_carcassData <- function(data){
                                          TRUE ~ 'Unknown'),
            Origin = case_when(AdiposeFinClipped == 'Yes' ~ 'Hatchery',
                               CWTScanned == 'Yes' ~ 'Hatchery',
-                              grepl('RE|LE|D|Yes', TagsVIE) ~ 'Hatchery',
+                              grepl('RE|LE|Yes', TagsVIE) ~ 'Hatchery',
                               grepl('LV|RV', MarksVentralFin) ~ 'Hatchery',
                               AdiposeFinClipped == 'No' &
                                 grepl('No|Unknown|NA', CWTScanned) &

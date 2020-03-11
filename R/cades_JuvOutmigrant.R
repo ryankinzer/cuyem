@@ -27,9 +27,9 @@
 #' cdmsR::cdmsLogin('your_username', 'your_password')
 #' df <- get_JUVests()
 #' con <- RODBC::odbcConnect(dsn = 'data source', uid = 'your_username', pwd = 'your_password')
-#' format_JuvenileDES(df, odbc_connection = con)
+#' cades_JuvOutmigrant(df, odbc_connection = con)
 
-format_JuvenileDES <- function(df,
+cades_JuvOutmigrant <- function(df,
                                detail_meta,
                                smoltEq_meta,
                                alpha = c('0.05', '0.10')){
@@ -77,14 +77,15 @@ format_JuvenileDES <- function(df,
   # format detail table
 
   detail_df <- tmp_df %>%
-    mutate(Run = case_when( # align CDMS run with CAX run types
-      Species == 'Chinook salmon' & LocationLabel == 'Lolo Creek RST' ~ 'unknown',
-      Species == 'Chinook salmon' & LocationLabel == 'Newsome Creek RST' ~ 'unknown',
-      Species == 'Chinook salmon' & LocationLabel == 'Johnson Creek RST' ~ 'Summer',
-      Species == 'Chinook salmon' & LocationLabel == 'Lower Secesh River RST' ~ 'Summer',
-      Species == 'Chinook salmon' & LocationLabel == 'Upper Secesh River RST' ~ 'Summer',
-      Species == 'Chinook salmon' & LocationLabel == 'Lake Creek RST' ~ 'Summer',
-      TRUE ~ Run)) %>%
+    # mutate(Run = case_when( # align CDMS run with CAX run types
+    #   Species == 'Chinook salmon' & LocationLabel == 'Lolo Creek: Lolo Creek RST' ~ 'unknown',
+    #   Species == 'Chinook salmon' & LocationLabel == 'Newsome Creek: Newsome Creek RST' ~ 'unknown',
+    #   Species == 'Chinook salmon' & LocationLabel == 'Johnson Creek: Johnson Creek RST' ~ 'summer',
+    #   Species == 'Chinook salmon' & LocationLabel == 'Secesh River: Lower Secesh River RST' ~ 'summer',
+    #   Species == 'Chinook salmon' & LocationLabel == 'Secesh River: Upper Secesh River RST' ~ 'summer',
+    #   Species == 'Chinook salmon' & LocationLabel == 'Lake Creek: Lake Creek RST' ~ 'summer',
+    #   TRUE ~ Run)) %>%
+    # mutate(Run = tolower(Run)) %>%
     left_join(detail_meta, by = c('LocationLabel', 'Species' = 'CommonName', 'Run'))
 
   detail_des <- detail_df %>%
@@ -117,7 +118,9 @@ format_JuvenileDES <- function(df,
            DataEntry,
            DataEntryNotes,
            CompilerRecordID,
-           Publish)
+           Publish) %>%
+  mutate(TotalNaturalAlpha = ifelse(NullRecord == 'Yes'| is.na(TotalNaturalLowerLimit), NA, TotalNaturalAlpha),
+         SurvivalRateAlpha = ifelse(NullRecord == 'Yes'| is.na(SurvivalRateLowerLimit), NA, SurvivalRateAlpha))
 
 # format smoltEq table
     smoltEq_des <- detail_df %>%
@@ -135,10 +138,12 @@ format_JuvenileDES <- function(df,
       ungroup() %>%
     left_join(smoltEq_meta, by = c('LocationLabel', 'Species' = 'CommonName', 'Run')) %>%
       mutate(NullRecord = ifelse(is.na(TotalNatural),'Yes','No'),
-             DataStatus = 'Draft') %>%
+             TotalNaturalAlpha = ifelse(NullRecord == 'Yes'| is.na(TotalNaturalLowerLimit),
+                                        NA, TotalNaturalAlpha),
+             DataStatus = 'Final') %>%
       select(ID = JuvenileOutmigrantsID,
              CommonName = Species,
-             Run,
+             Run = CAX_Run,
              RecoveryDomain,
              ESU_DPS,
              MajorPopGroup,

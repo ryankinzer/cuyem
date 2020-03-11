@@ -1,7 +1,7 @@
 #' @title Get Fins Trapping Data
 #'
 #' @description Query \url{https://www.finsnet.org/} trapping
-#'   module data. Currently the function requires an odbc connection from behind
+#'   module data. This function is set up to query directly from FINS API or from a static table on NPT server. Currently the function requires an odbc connection from behind
 #'   the NPT firewall to download trapping data that has been copied from
 #'   \url{https://www.finsnet.org/}. Data is updated monthly or as needed.  In
 #'   the future the function will retrieve data from a
@@ -22,9 +22,9 @@
 #' qry <- "SELECT distinct(Facility) FROM FINS_all_trapping"
 #' f <- RODBC::sqlQuery(con, qry) %>% mutate_all(as.character) %>% pull(Facility)
 #' npt_f <- f[grepl('NPT', f)]
-#' get_FinsTrapping(npt_f, odbc_connection = con)
+#' get_WeirData(npt_f, odbc_connection = con)
 
-get_FinsTrapping <- function(facility, odbc_connection){
+get_WeirData <- function(facility, odbc_connection){
 
   x <- facility
   con <- odbc_connection

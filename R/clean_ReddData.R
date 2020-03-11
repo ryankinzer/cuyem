@@ -11,7 +11,7 @@ clean_reddData <- function(data){
   {if(is.null(data))stop("redd data must be supplied")}
 
     redd_dat <- data %>%
-      mutate(TransectName = str_split(LocationLabel, ' - ', simplify = TRUE)[,2]) %>%
+      mutate(TransectName = str_split(LocationLabel, 'Transect - ', simplify = TRUE)[,2]) %>%
       left_join(transect_meta, by = c('Species', 'Run', 'StreamName', 'TransectName')) %>%
       mutate(SurveyDate = lubridate::date(lubridate::ymd_hms(SurveyDate)),
              SurveyYear = lubridate::year(SurveyDate)) %>%
