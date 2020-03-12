@@ -20,6 +20,7 @@ get_NOSAests <- function(redd_data, carcass_data, mr_ests){
     select(-EffDt)
 
   c_df <- carcass_data %>% filter(ReportingGroup != 'Meadow Creek') %>%
+    filter(CarcassSpecies == 'S_CHN') %>%
     mutate(c_EffDt = lubridate::ymd_hms(EffDt),
            c_EffDt = if_else(is.na(c_EffDt), lubridate::ymd_hms('19000101 00:00:00'), c_EffDt)) %>%
     ungroup() %>%
