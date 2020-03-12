@@ -25,19 +25,19 @@ clean_carcassData <- function(data){
                               grepl('RE|LE|Yes', TagsVIE) ~ 'Hatchery',
                               grepl('LV|RV', MarksVentralFin) ~ 'Hatchery',
 
+                              AdiposeFinClipped == 'Unknown' ~ 'Unknown',
+                              CWTScanned == 'Unknown' ~ 'Unknown',
+                              TagsVIE == 'Unknown' ~ 'Unknown',
+                              MarksVentralFin == 'Unknown' ~ 'Unknown',
+
                               grepl('No|NA', AdiposeFinClipped) &
                               grepl('No|NA', CWTScanned) &
                               !grepl('RE|LE|Yes|Unknown', TagsVIE) &
                               !grepl('LV|RV|Unknown', MarksVentralFin) ~ 'Natural',
-                              #
-                              # AdiposeFinClipped == 'Unknown' ~ 'Unknown',
-                              # CWTScanned == 'Unknown' ~ 'Unknown',
-                              # TagsVIE == 'Unknown' ~ 'Unknown',
-                              # MarksVentralFin == 'Unknown' ~ 'Unknown',
-                              #
-                              # TRUE ~ 'NA')
 
-                              TRUE ~ 'Natural')
+                              TRUE ~ NA_character_)
+
+                              #TRUE ~ 'Natural')
             )
 
   dat <- dat %>%
