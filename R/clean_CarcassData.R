@@ -20,18 +20,22 @@ clean_carcassData <- function(data){
                           ifelse(is.na(Count), 0, Count)))
 
   dat <- dat %>%
-    mutate(#AdiposeFinClipped = case_when(AdiposeFinClipped == 'No' ~ 'No',
-            #                             AdiposeFinClipped == 'Yes' ~ 'Yes',
-            #                             TRUE ~ 'Unknown'),
-           Origin = case_when(AdiposeFinClipped == 'Yes' ~ 'Hatchery',
+    mutate(Origin = case_when(AdiposeFinClipped == 'Yes' ~ 'Hatchery',
                               CWTScanned == 'Yes' ~ 'Hatchery',
                               grepl('RE|LE|Yes', TagsVIE) ~ 'Hatchery',
                               grepl('LV|RV', MarksVentralFin) ~ 'Hatchery',
-                              AdiposeFinClipped == 'No' &
-                                grepl('No|NA', CWTScanned) &
-                                !grepl('RE|LE|D|Yes|Unknown', TagsVIE) &
-                                !grepl('LV|RV', MarksVentralFin) ~ 'Natural',
-                              TRUE ~ 'Unknown')
+
+                              AdiposeFinClipped == 'Unknown' ~ 'Unknown',
+                              CWTScanned == 'Unknown' ~ 'Unknown',
+                              TagsVIE == 'Unknown' ~ 'Unknown',
+                              MarksVentralFin == 'Unknown' ~ 'Unknown',
+
+                              grepl('No|NA', AdiposeFinClipped) &
+                              grepl('No|NA', CWTScanned) &
+                              !grepl('RE|LE|Yes|Unknown', TagsVIE) &
+                              !grepl('LV|RV|Unknown', MarksVentralFin) ~ 'Natural',
+
+                              TRUE ~ NA_character_)
             )
 
   dat <- dat %>%
