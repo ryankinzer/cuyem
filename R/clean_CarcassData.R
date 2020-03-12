@@ -21,13 +21,17 @@ clean_carcassData <- function(data){
 
   dat <- dat %>%
     mutate(Origin = case_when(AdiposeFinClipped == 'Yes' ~ 'Hatchery',
-                              AdiposeFinClipped == 'Unknown' ~ 'Unknown',
                               CWTScanned == 'Yes' ~ 'Hatchery',
-                              CWTScanned == 'Unknown' ~ 'Unknown',
                               grepl('RE|LE|Yes', TagsVIE) ~ 'Hatchery',
-                              TagsVIE == 'Unknown' ~ 'Unknown',
                               grepl('LV|RV', MarksVentralFin) ~ 'Hatchery',
+
+                              AdiposeFinClipped == 'Unknown' ~ 'Unknown',
+                              CWTScanned == 'Unknown' ~ 'Unknown',
+                              TagsVIE == 'Unknown' ~ 'Unknown',
                               MarksVentralFin == 'Unknown' ~ 'Unknown',
+
+
+
                               TRUE ~ 'Natural')
             )
 
