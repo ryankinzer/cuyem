@@ -92,7 +92,7 @@ cades_JuvOutmigrant <- function(df,
     mutate(NullRecord = case_when(
       is.na(Abundance) | is.na(Survival) ~ 'Yes',
       TRUE ~ 'No')) %>%
-    select(ID,
+    select(ShadowId = ID,
            JuvenileOutmigrantsID,
            Location = LocationLabel,
            LocPTcode,
@@ -141,7 +141,7 @@ cades_JuvOutmigrant <- function(df,
              TotalNaturalAlpha = ifelse(NullRecord == 'Yes'| is.na(TotalNaturalLowerLimit),
                                         NA, TotalNaturalAlpha),
              DataStatus = 'Final') %>%
-      select(ID = JuvenileOutmigrantsID,
+      select(ShadowId = JuvenileOutmigrantsID,
              CommonName = Species,
              Run = CAX_Run,
              RecoveryDomain,

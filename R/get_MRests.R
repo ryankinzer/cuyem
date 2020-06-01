@@ -66,6 +66,7 @@ get_MRests <- function(weir_data, carcass_data = NULL, species = c('Chinook', 'S
 
     car_up <- c_df %>%
       filter(AboveWeir == 'Yes') %>%
+      filter(CarcassSpecies == 'S_CHN') %>% # REMOVE NON-TARGET THIS WAY!!!!!!
       filter(Species == 'Chinook salmon' & Run == 'Spring/summer') %>%
       filter(ForkLength > 200 | is.na(ForkLength)) %>%
       filter(ReportingGroup %in% unique(n1$stream))

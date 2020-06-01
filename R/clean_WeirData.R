@@ -16,7 +16,7 @@ clean_weirData <- function(data){
 
   # create date/time fields, and mark-recapture fields
 
-  #names(data) <- gsub(' ','_',tolower(names(data)))
+  names(data) <- gsub(' ','_',tolower(names(data)))
 
   #data <- mutate_all(as.character)
 

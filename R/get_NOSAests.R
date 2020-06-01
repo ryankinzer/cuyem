@@ -134,7 +134,8 @@ get_NOSAests <- function(redd_data, carcass_data, mr_ests){
     bind_cols(est_proportion(ch_pop_df$n_Female, (ch_pop_df$n_Female + ch_pop_df$n_Male)) %>%
                 select_all(.funs = funs(paste0("F_",.)))) %>%
     bind_cols(est_proportion(ch_pop_df$n_Prespawn, (ch_pop_df$n_Prespawn + ch_pop_df$n_Spawned)) %>%
-                select_all(.funs = funs(paste0("Psp_",.)))) %>%
+                select_all(.funs = funs(paste0("Psp_",.))) %>%
+                mutate_each(funs(replace(., which(is.na(.)), 0)))) %>%
     bind_cols(est_proportion(ch_pop_df$n_Female_D, (ch_pop_df$n_Female_D + ch_pop_df$n_Male_D)) %>%
                 select_all(.funs = funs(paste0("F_D_",.)))) %>%
     bind_cols(est_proportion(ch_pop_df$n_Prespawn_D, (ch_pop_df$n_Prespawn_D + ch_pop_df$n_Spawned_D)) %>%
@@ -287,8 +288,8 @@ get_NOSAests <- function(redd_data, carcass_data, mr_ests){
   ch_car_age <- left_join(ch_car_age, jack_frac_total,
                           by = c('MPG', 'POP_NAME', 'TRT_POPID', 'Species', 'Run', 'SurveyYear')) %>%
     left_join(jack_frac_origin,
-              by = c('MPG', 'POP_NAME', 'TRT_POPID', 'Species', 'Run', 'SurveyYear'))
-
+              by = c('MPG', 'POP_NAME', 'TRT_POPID', 'Species', 'Run', 'SurveyYear')) %>%
+  mutate_each(funs(replace(., which(is.na(.)), 0)))
 
   ch_pop_df <- left_join(ch_pop_df, ch_car_age,
                          by = c('MPG', 'POP_NAME', 'TRT_POPID', 'Species', 'Run', 'SurveyYear'))
@@ -317,7 +318,7 @@ get_NOSAests <- function(redd_data, carcass_data, mr_ests){
                                         x = NOSAej,
                                         se.x = NOSAej_SE,
                                         y = HOSAej,
-                                        se.y = HOSAej),
+                                        se.y = HOSAej_SE),
            TSAej_lwr = TSAej - 1.96*TSAej_SE,
            TSAej_upr = TSAej + 1.96*TSAej_SE,
 
@@ -327,6 +328,7 @@ get_NOSAests <- function(redd_data, carcass_data, mr_ests){
                                          se.x = HOSAej_SE,
                                          y = TSAej,
                                          se.y = TSAej_SE),
+           pHOSej_SE = ifelse(is.nan(pHOSej_SE),0,pHOSej_SE),
            pHOSej_lwr = pHOSej - 1.96*pHOSej_SE,
            pHOSej_upr = pHOSej + 1.96*pHOSej_SE,
            pHOSej_lwr = if_else(pHOSej_lwr < 0, 0, pHOSej_lwr))

@@ -33,7 +33,10 @@ cades_NOSA <- function(nosa_data, nosa_meta, IPTDS = FALSE, alpha = c('0.05', '0
 
   tmp_df <- tmp_df %>%
     mutate(NullRecord = ifelse(is.na(NOSAij), 'Yes', 'No'),
-           ID = replicate(n(),guid(uppercase = FALSE)),
+           #ShadowId = replicate(n(),guid(uppercase = FALSE)),
+           Age2Prop = NA,
+           Age2PropLowerLimit = NA,
+           Age2PropUpperLimit = NA,
             Age7Prop =  NA,
             Age7PropLowerLimit =  NA,
             Age7PropUpperLimit =  NA,
@@ -55,7 +58,7 @@ cades_NOSA <- function(nosa_data, nosa_meta, IPTDS = FALSE, alpha = c('0.05', '0
            )
 
   tmp_df <- tmp_df %>%
-    select(ID,
+    select(#ShadowId,
            CommonName,
            Run = CAX_Run,
            RecoveryDomain,
@@ -104,9 +107,9 @@ cades_NOSA <- function(nosa_data, nosa_meta, IPTDS = FALSE, alpha = c('0.05', '0
            TSAEJLowerLimit = TSAej_lwr,
            TSAEJUpperLimit = TSAej_upr,
            TSAEJAlpha = alpha,
-           Age2Prop = p_2,
-           Age2PropLowerLimit = lwr_2,
-           Age2PropUpperLimit = upr_2,
+           Age2Prop,
+           Age2PropLowerLimit,
+           Age2PropUpperLimit,
            Age3Prop = p_3,
            Age3PropLowerLimit = lwr_3,
            Age3PropUpperLimit = upr_3,
@@ -172,7 +175,7 @@ cades_NOSA <- function(nosa_data, nosa_meta, IPTDS = FALSE, alpha = c('0.05', '0
 
     tmp_df <- tmp_df %>%
       mutate(NullRecord = ifelse(is.na(N), 'Yes', 'No'),
-             ID = replicate(n(), guid(uppercase = FALSE)),
+             #ShadowId = replicate(n(), guid(uppercase = FALSE)),
              Age2Prop =  NA,
              Age2PropLowerLimit =  NA,
              Age2PropUpperLimit =  NA,
@@ -236,7 +239,7 @@ cades_NOSA <- function(nosa_data, nosa_meta, IPTDS = FALSE, alpha = c('0.05', '0
 
 
     tmp_df <- tmp_df %>%
-      select(ID,
+      select(#ShadowId,
         CommonName,
         Run = CAX_Run,
         RecoveryDomain,
