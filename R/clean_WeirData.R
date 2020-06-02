@@ -21,7 +21,8 @@ clean_weirData <- function(data){
   #data <- mutate_all(as.character)
 
   trap_df <- data %>%
-    mutate(trapped_date = lubridate::mdy(trapped_date),
+    mutate(trapped_date = gsub('T\\d{2}:\\d{2}:\\d{2}', '', trapped_date),
+           trapped_date = lubridate::ymd(trapped_date),
            trap_year = lubridate::year(trapped_date)) %>%
     mutate(weir = str_split(trap, ' - ', simplify =  TRUE)[,1]) %>%
     mutate(stream = str_replace(weir, ' Weir', ''),
