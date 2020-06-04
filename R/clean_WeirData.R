@@ -61,7 +61,8 @@ clean_weirData <- function(data){
                 slice(which.max(trapped_date)) %>%
                 select(tmp_fish_id, final_location = current_location), by = 'tmp_fish_id') %>%
     select(trap_year, trapped_date, tmp_fish_id, current_location, final_location, everything()) %>%
-    select(-tmp_id, -pit, -op)
+    select(-tmp_id, -pit, -op) %>%
+    ungroup()
 
   return(trap_df)
 
