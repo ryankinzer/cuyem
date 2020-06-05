@@ -22,11 +22,14 @@ est_group_p <- function(.data, .summary_var, alpha = 0.05, ...){
   # count groups first
   cnt <- cnt_groups(.data, .summary_var = !!summary_var, ...)
 
-  cnt <- cnt %>%
-    complete(..., nesting(!!summary_var), fill = list(n = 0))
+  all_vars <- distinct(cnt, !!summary_var)
+
+  # cnt <- cnt %>%
+  #   complete(..., nesting(!!summary_var), fill = list(n = 0))
 
   p_df <- cnt %>%
     nest(cnt = c(!!summary_var, n)) %>%
+    mutate(cnt = map(cnt, function(df) complete(df, all_vars, fill = list(n=0)))) %>%
     mutate(p_df = map(cnt, function(df) est_proportions(x = df$n, alpha = alpha))) %>%
     unnest(cols = c(cnt, p_df))
 
