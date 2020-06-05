@@ -15,7 +15,8 @@ cnt_groups <- function(.data, .summary_var, ...){
 
   dat <- .data %>%
     group_by(...) %>%
-    count(!!summary_var)
+    count(!!summary_var) %>%
+    ungroup()
 
   # colnum <- ncol(dat)
   # colnames(dat)[colnum] <- n_name

@@ -16,10 +16,14 @@
 est_group_p <- function(.data, .summary_var, alpha = 0.05, ...){
 
   # quote field names
-  summary_var <- enquo(.summary_var)
+  #summary_var <- enquo(.summary_var) # doesn't work for complete(nesting)
+  summary_var <- ensym(.summary_var)
 
   # count groups first
   cnt <- cnt_groups(.data, .summary_var = !!summary_var, ...)
+
+  cnt <- cnt %>%
+    complete(..., nesting(!!summary_var), fill = list(n = 0))
 
   p_df <- cnt %>%
     nest(cnt = c(!!summary_var, n)) %>%
