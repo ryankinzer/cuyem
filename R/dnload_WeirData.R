@@ -6,7 +6,6 @@
 #'
 #' @return
 #' @import httr
-#' @export
 #'
 #' @examples
 dnload_WeirData <- function(apikey, startDate, endDate){

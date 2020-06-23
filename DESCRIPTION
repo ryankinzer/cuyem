@@ -16,9 +16,9 @@ LazyData: true
 RoxygenNote: 7.1.0
 Suggests: knitr,
     rmarkdown,
-    RODBC,
     cdmsR
 VignetteBuilder: knitr
 Imports: 
     dplyr,
+    httr,
     lubridate
