@@ -42,7 +42,7 @@ clean_carcassData <- function(data){
     mutate(OpercleLeft = ifelse(OpercleLeft == 'LOPN', 'LON', OpercleLeft)) %>%
     mutate(OpercleRight = ifelse(OpercleRight == 'ROPN', 'RON', OpercleRight)) %>%
     mutate(Mark_Discernible = case_when(AboveWeir == 'Yes' & grepl('LOP|No', OpercleLeft) ~ TRUE,
-                                        AboveWeir == 'Yes' & grepl('ROP|No', OpercleRight) ~ TRUE,
+                                        AboveWeir == 'Yes' & grepl('ROP|No', OpercleRight) ~ TRUE, # Source of potential problem for JCAPE - includes fish when opercle right is possible, when only we need to look at opercle left.
                                         AboveWeir == 'Yes' & grepl('OP|Lost|No', TagsPetersonDisk) ~ TRUE,
                                         AboveWeir == 'Yes' & str_detect(TagsPetersonDisk, '\\d') ~ TRUE,
                                         AboveWeir == 'Yes' & grepl('OP|Lost|Yes|No', TagsStaple) ~ TRUE,

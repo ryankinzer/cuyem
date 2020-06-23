@@ -78,6 +78,9 @@ est_proportion <- function(x, n, method=c("score", "wald"), alpha=.05){
 
     z <- qnorm(1-alpha/2)
     CI.lower <- ((x + z^2/2)/(n + z^2)) - (z/(n + z^2))*sqrt((p*(1-p)*n)+(z^2/4))
+
+    CI.lower <- ifelse(CI.lower < 0, 0, CI.lower)
+
     CI.upper <- ((x + z^2/2)/(n + z^2)) + (z/(n + z^2))*sqrt((p*(1-p)*n)+(z^2/4))
   }
 

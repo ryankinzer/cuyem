@@ -20,10 +20,15 @@ clean_weirData <- function(data){
 
   #data <- mutate_all(as.character)
 
+  if(grepl('T',data$trapped_date[1])){
+    data$trapped_date = gsub('T\\d{2}:\\d{2}:\\d{2}', '', data$trapped_date)
+    data$trapped_date = lubridate::ymd(data$trapped_date)
+    } else {
+    data$trapped_date = lubridate::mdy(data$trapped_date)
+    }
+
   trap_df <- data %>%
-    mutate(trapped_date = gsub('T\\d{2}:\\d{2}:\\d{2}', '', trapped_date),
-           trapped_date = lubridate::ymd(trapped_date),
-           trap_year = lubridate::year(trapped_date)) %>%
+    mutate(trap_year = lubridate::year(trapped_date)) %>%
     mutate(weir = str_split(trap, ' - ', simplify =  TRUE)[,1]) %>%
     mutate(stream = str_replace(weir, ' Weir', ''),
            stream = str_replace(stream, 'Upper ', '')) %>%
