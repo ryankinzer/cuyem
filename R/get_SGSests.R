@@ -23,7 +23,8 @@ get_SGSests <- function(redd_data = NULL, carcass_data = NULL, ...){
 
   # # carcass count
   c_sum <- cnt_groups(car_dat %>% filter(Count != 0), Count, ...) %>%
-    rename(Carcasses = n)
+    rename(Carcasses = n) %>%
+    select(-Count)
 
   # % hatchery origin spawners
   phos <- est_group_p(car_dat %>% filter(Origin %in% c('Natural', 'Hatchery')),
@@ -55,7 +56,6 @@ get_SGSests <- function(redd_data = NULL, carcass_data = NULL, ...){
     full_join(phos, by = vars) %>%
     full_join(pfem, by = vars) %>%
     full_join(psm, by = vars)
-
 
   return(SGS_ests)
 }
