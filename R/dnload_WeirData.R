@@ -7,7 +7,6 @@
 #' @return
 #' @import httr
 #'
-#' @examples
 dnload_WeirData <- function(apikey, startDate, endDate){
   # assign user agent to the GitHub repo for this package
   #ua = httr::user_agent('https://github.com/ryankinzer/cuyem')

@@ -2,23 +2,11 @@
 title: 'cuyem: Snake River Basin Anadromous Fish Metric Estimation'
 author: "Ryan N. Kinzer"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
-output:
-  html_document:
-    collapsed: yes
-    fig_caption: yes
-    fig_height: 8
-    fig_width: 8
-    smooth_scroll: yes
-    theme: cerulean
-    toc: yes
-    toc_depth: 3
-    toc_float: yes
-  html_vignette: null
-link-citations: yes
-csl: /Users/ryank/Documents/Ryan Sync/Templates/american-fisheries-society.csl
-bibliography: /Users/ryank/Documents/Ryan Sync/References/simulation.bib
-vignette: |
-  %\VignetteIndexEntry{cuyem} %\VignetteEngine{knitr::rmarkdown} %\VignetteEncoding{UTF-8}
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Put the title of your vignette here}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
 ---
 `r #  rmarkdown::html_vignette`
 ### Background
@@ -64,7 +52,7 @@ To estimate abundance simple call the function and specify the name of the data 
 N_hat <- emigrant_abundance(data = dat, alpha = 0.05, iter = 1000, print=TRUE, save_file = FALSE, file_name = NULL)
 ```
 
-The values printed to the console represent the total estimate and precision after combining all strata.  To view individual strata estimates access the *Strata* data frame saved to the R object *N_hat*. Other attributes of the N_hat object can be seen using *attributes(N_hat)*.
+The values printed to the console represent the total estimate and precision after combining all strata.  To view individual strata estimates access the *Strata* data frame saved to the R object *N_hat*. Other attributes of the N_hat object can be seen using `attributes(N_hat)`.
 
 ```{r}
 print(N_hat$Strata)
@@ -80,39 +68,29 @@ N_hat <- emigrant_abundance(data = "inputdata.csv")
 
 ### Estimate Proportion
 
-Proportions are one of the most commonly estimated fish metrics for evaluating the status of Snake River basin anadromous fish populations.  Proportions are used to understand trends in population sex ratios, the fraction of hatchery fish spawning (*pHOS*), and age structure. Yet, proportions are rarely presented with estimates of precision.  The *estimate_proportion()* function returns a proportion with the associated standard error and confidence intervals.     
+Proportions are one of the most commonly estimated fish metrics for evaluating the status of Snake River basin anadromous fish populations.  Proportions are used to understand trends in population sex ratios, the fraction of hatchery fish spawning (*pHOS*), and age structure. Yet, proportions are rarely presented with estimates of precision.  The *est_proportion()* function returns a proportion with the associated standard error and confidence intervals.     
 
 ```{r}
-p_hat <- estimate_proportion(x = 10, n = 100, method = 'score', alpha = 0.05, print = TRUE)
+p_hat <- est_proportion(x = 10, n = 100, method = 'score', alpha = 0.05)
 ```
 
 The only two required arguments are the number of successes (*x*) and the number of trials (*n*).  The other arguments are set to DEFAULT methods and do not need to be entered into the function call.
 
-Three methods exist for estimating confidence intervals; 'wald', 'exact' and 'score'.  The DEFAUT method is 'score' which provides strictly positive confidence interval estimates with nominal coverage probabilities.  
+Two methods exist for estimating confidence intervals; 'wald', and 'score'.  The DEFAUT method is 'score' which provides strictly positive confidence interval estimates with nominal coverage probabilities.  
 
 The *'wald'* method has the potential to produce confidence intervals outside the range of [0,1]. 
 
 ```{r}
-p_hat <- estimate_proportion(x = 1, n = 10, method = 'wald')
+p_hat <- est_proportion(x = 1, n = 10, method = 'wald')
 ```
 
 ```{r}
-p_hat <- estimate_proportion(x = 9, n = 10, method = 'wald')
+p_hat <- est_proportion(x = 9, n = 10, method = 'wald')
 ```
 
-And the *'exact'* method tends to produce too wide of confidence intervals that exceed the desired coverage probabilites.
 
 ```{r}
-p_hat <- estimate_proportion(x = 5, n = 10, method = 'exact')
-```
-
-```{r}
-exact_width <- p_hat$CI.upper - p_hat$CI.lower
-exact_width
-```
-
-```{r}
-p_hat <- estimate_proportion(x = 5, n = 10, method = 'score')
+p_hat <- est_proportion(x = 5, n = 10, method = 'score')
 ```
 
 ```{r}

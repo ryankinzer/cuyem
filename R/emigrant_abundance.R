@@ -1,18 +1,18 @@
-#' @title Estimate juvenile emigrant abundance from mark-recapture data.
+#' @title Estimate juvenile emigrant abundance from M-R data.
 #'
 #' @description \code{emigrant_abundance} generates stratified juvenile abundance
-#'   estimates from mark-recapture data collected at rotary screw traps (RST).
+#'   estimates from M-R data collected at rotary screw traps (RST).
 #'   The function operates similar to a Gauss based program developed by
 #'   Steinhorst et al. (2004). Point estimates are derived using the Bailey
-#'   estimator and uncertainty is obtained by bootstrapping unmarked capatures
-#'   and marked recaptures.
+#'   estimator and uncertainty is obtained by bootstrapping unMed capatures
+#'   and Med Rs.
 #'
 #' @section Warning: Standard error and confidence intervals will not match GAUSS estimates
 #'   perfectly because of bootstrapped sample distribution.
 #'
 #' @param data An R dataframe or "example.csv" file containing at least three fields of data; the
-#'   count of unmarked captures (\code{C}), marked fish (\code{M}) released
-#'   upstream to conduct trap efficiency trials, and recaptured (\code{R}) trap
+#'   count of unMed Cs (\code{C}), Med fish (\code{M}) released
+#'   upstream to conduct trap efficiency trials, and Rd (\code{R}) trap
 #'   efficiency fish. Field names are required to be; C, M, R.  All other fields are ignored.
 #'
 #' @param alpha Type I error rate.  Default is set at 0.05 to produce 95\%
@@ -37,11 +37,11 @@
 #' est1$Strata
 #'
 #' # Multiple strata
-#' unmark <- c(76, 128, 82, 61, 350, 74)
-#' mark <- c(68, 117, 70, 42, 282, 64)
+#' unM <- c(76, 128, 82, 61, 350, 74)
+#' M <- c(68, 117, 70, 42, 282, 64)
 #' recap <- c(7, 10, 9, 18, 48, 10)
 #'
-#' dat <- data.frame(C = unmark, M = mark, R = recap)
+#' dat <- data.frame(C = unM, M = M, R = recap)
 #' est_strata <- emigrant_abundance(data = dat, alpha = .05,iter = 1000, print=TRUE)
 #' est_strata$Strata
 #'
@@ -53,23 +53,25 @@
 
 emigrant_abundance <- function(data, alpha = 0.05, iter = 1000, print = TRUE, save_file = FALSE, file_name = NULL){
 
-  if(is.character(data) == TRUE)
-  { input <- read.csv(file = data, header = TRUE, sep =',') }
-  else { input <- data }
+  if(is.character(data) == TRUE){
+    input <- read.csv(file = data, header = TRUE, sep =',')
+    } else {
+    input <- data
+    }
 
-  C <- input$Capture
-  M <- input$Mark
-  R <- input$Recapture
+  C <- input$C
+  M <- input$M
+  R <- input$R
 
-    df = data.frame(matrix(NA,length(C)+1,9, dimnames=list(c(),c("Strata", "Capture",
-         "Mark","Recapture","Efficiency","N.hat","Std.error","CI.lower","CI.upper"))),
+    df = data.frame(matrix(NA,length(C)+1,9, dimnames=list(c(),c("Strata", "C",
+         "M","R","Efficiency","N.hat","Std.error","CI.lower","CI.upper"))),
          stringsAsFactors=F)
     df$Strata = c(1:length(C),"Total")
-    df$Capture = c(C,sum(C))
-    df$Mark = c(M,sum(M))
-    df$Recapture = c(R,sum(R))
-    df$Efficiency = round(df$Recapture/df$Mark,3)
-    df$N.hat = round((df$Capture*(df$Mark + 1))/(df$Recapture + 1))
+    df$C = c(C,sum(C))
+    df$M = c(M,sum(M))
+    df$R = c(R,sum(R))
+    df$Efficiency = round(df$R/df$M,3)
+    df$N.hat = round((df$C*(df$M + 1))/(df$R + 1))
     df[length(C)+1,6] = sum(df[1:length(C),6])
     Nboot = matrix(NA,iter,length(C))
     for(i in 1:(dim(df)[1]-1)){
