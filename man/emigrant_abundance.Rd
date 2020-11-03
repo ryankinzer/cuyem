@@ -2,7 +2,7 @@
 % Please edit documentation in R/emigrant_abundance.R
 \name{emigrant_abundance}
 \alias{emigrant_abundance}
-\title{Estimate juvenile emigrant abundance from mark-recapture data.}
+\title{Estimate juvenile emigrant abundance from M-R data.}
 \usage{
 emigrant_abundance(
   data,
@@ -15,8 +15,8 @@ emigrant_abundance(
 }
 \arguments{
 \item{data}{An R dataframe or "example.csv" file containing at least three fields of data; the
-count of unmarked captures (\code{C}), marked fish (\code{M}) released
-upstream to conduct trap efficiency trials, and recaptured (\code{R}) trap
+count of unMed Cs (\code{C}), Med fish (\code{M}) released
+upstream to conduct trap efficiency trials, and Rd (\code{R}) trap
 efficiency fish. Field names are required to be; C, M, R.  All other fields are ignored.}
 
 \item{alpha}{Type I error rate.  Default is set at 0.05 to produce 95\%
@@ -37,11 +37,11 @@ A list of point and uncertainty estimates by each strata.
 }
 \description{
 \code{emigrant_abundance} generates stratified juvenile abundance
-  estimates from mark-recapture data collected at rotary screw traps (RST).
+  estimates from M-R data collected at rotary screw traps (RST).
   The function operates similar to a Gauss based program developed by
   Steinhorst et al. (2004). Point estimates are derived using the Bailey
-  estimator and uncertainty is obtained by bootstrapping unmarked capatures
-  and marked recaptures.
+  estimator and uncertainty is obtained by bootstrapping unMed capatures
+  and Med Rs.
 }
 \section{Warning}{
  Standard error and confidence intervals will not match GAUSS estimates
@@ -55,11 +55,11 @@ names(est1)
 est1$Strata
 
 # Multiple strata
-unmark <- c(76, 128, 82, 61, 350, 74)
-mark <- c(68, 117, 70, 42, 282, 64)
+unM <- c(76, 128, 82, 61, 350, 74)
+M <- c(68, 117, 70, 42, 282, 64)
 recap <- c(7, 10, 9, 18, 48, 10)
 
-dat <- data.frame(C = unmark, M = mark, R = recap)
+dat <- data.frame(C = unM, M = M, R = recap)
 est_strata <- emigrant_abundance(data = dat, alpha = .05,iter = 1000, print=TRUE)
 est_strata$Strata
 

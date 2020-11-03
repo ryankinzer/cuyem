@@ -7,8 +7,6 @@
 #'
 #' @return
 #' @import httr
-#'
-#' @examples
 dnload_WeirData <- function(module = c('Trapping', 'Release', 'Spawning'),
                             apikey, startDate, endDate){
 

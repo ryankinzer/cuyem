@@ -4,18 +4,14 @@
 \alias{get_SGSests}
 \title{Summarize SGS Data}
 \usage{
-get_SGSests(redd_data = NULL, carcass_data = NULL, alpha = 0.05, ...)
+get_SGSests(redd_data = NULL, carcass_data = NULL, ...)
 }
 \arguments{
 \item{redd_data}{cleaned redd data}
 
-\item{carcass_data}{cleaned carcass data with best age appended}
+\item{carcass_data}{cleaned carcass data}
 
-\item{species}{Chinook or steelhead}
-
-\item{run}{Spring/summer, fall, summer}
-
-\item{group}{variables to group the data}
+\item{...}{variables to group the data}
 }
 \value{
 
@@ -27,5 +23,5 @@ Summarize and estimate performance measures for SGS data.
 get_SGSests(clean_redd, clean_car)
 }
 \author{
-Ryan N. Kinzer
+Ryan N. Kinzer, Tyler T. Stright
 }
