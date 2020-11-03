@@ -12,6 +12,7 @@
 #'
 #' @return a data frame of all returned data from FINS query
 #' @import httr
+#' @export
 #'
 get_FINSdata <- function(module = c('Trapping', 'Release', 'Spawning'),
                             scope = c('NPT','FINS Domain'),

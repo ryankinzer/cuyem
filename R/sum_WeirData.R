@@ -3,7 +3,8 @@
 #' @description summarizes and processes \url{https://www.finsnet.org/} trapping
 #'   module data for quick dissemination and mark/recapture analysis
 #'
-#' @param df the data.frame output from \code{get_FinsTrapping}
+#' @param df the data.frame output from \code{get_FINSdata} and the
+#'  'Trapping' module
 #'
 #' @return a list with two objects. 1) a summary data.frame to easily pivot
 #'   table for counts of fish trapped and their disposition, 2) a data.frame
@@ -20,7 +21,7 @@
 #' df <- get_FinsTrapping(npt_f, odbc_connection = con)
 #' sum_df <- summarise_FinsTrapping(df)
 
-summarise_FinsTrapping <- function(df){
+sum_WeirData <- function(df){
 
   if(is.null(df)){stop("A data frame of raw Fins trapping data must be specified.")}
 
