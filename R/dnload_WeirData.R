@@ -1,26 +1,29 @@
 #' @title Download FINS Trapping Data
 #'
+#' @param module FINS module to query
 #' @param apikey user defined API key provided by FINS development team
 #' @param startDate query start date
 #' @param endDate query end data
 #'
 #' @return
 #' @import httr
-#'
-dnload_WeirData <- function(apikey, startDate, endDate){
+dnload_WeirData <- function(module = c('Trapping', 'Release', 'Spawning'),
+                            apikey, startDate, endDate){
+
   # assign user agent to the GitHub repo for this package
   #ua = httr::user_agent('https://github.com/ryankinzer/cuyem')
   ua = httr::user_agent('Nez Perce Tribe')
 
   # compose url with query
-  url_req = 'https://www.finsnet.org/fins/ncg/Trapping/'
+  url_req = paste('https://www.finsnet.org/fins/ncg/', module, '/', sep='')
 
-  # build query for DART
+
+  # build query for FINS
   queryList = list(apikey = 'cGsvN7QlsSj0Uiy2kOLECQ8UsNhdt2bj',#apikey,
                    startDate = '01/01/1990',#
                    endDate = '01/01/2020')#
 
-  # send query to DART
+  # send query to FINS
   httr::modify_url(url_req, query = queryList)
   web_req = httr::GET(url_req, ua,
                       query = queryList)
@@ -33,17 +36,16 @@ dnload_WeirData <- function(apikey, startDate, endDate){
   # stringi::stri_enc_detect(content(web_req, "raw"))
 
   # parse the response
-  parsed = httr::content(web_req,
-                         'text')
+  # parsed = httr::content(web_req, 'text')
 
-  parsed = httr::content(web_req,
+  df = httr::content(web_req,
                          'parsed',
                          type = 'text/csv',
                          encoding = 'utf-8')
 
   #%>%
-  df <- readr::read_delim(parsed, delim = ',',
-               col_names = T)
+  # df <- readr::read_delim(parsed, delim = ',',
+  #              col_names = T)
 
   if(is.null(df)) {
     message(paste('FINS returned no data'))
