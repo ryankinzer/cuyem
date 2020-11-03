@@ -4,9 +4,16 @@
 \alias{dnload_WeirData}
 \title{Download FINS Trapping Data}
 \usage{
-dnload_WeirData(apikey, startDate, endDate)
+dnload_WeirData(
+  module = c("Trapping", "Release", "Spawning"),
+  apikey,
+  startDate,
+  endDate
+)
 }
 \arguments{
+\item{module}{FINS module to query}
+
 \item{apikey}{user defined API key provided by FINS development team}
 
 \item{startDate}{query start date}

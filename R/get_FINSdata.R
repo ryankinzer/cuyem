@@ -1,14 +1,37 @@
-#' @title Download FINS Trapping Data
+#' @title Download data from LSRCP FINS database.
 #'
-#' @param module FINS module to query
-#' @param apikey user defined API key provided by FINS development team
-#' @param startDate query start date
-#' @param endDate query end data
+#' @description \code{get_FINSdata} downloads FINS data from their API using an
+#'   NPT specific api key. The function can access data from three FINS modules;
+#'   'Trapping', 'Release' and 'Spawning'. The user can also specify if only NPT
+#'   data is required or the full dataset from FINS.
 #'
-#' @return
+#' @param module FINS database module to query; Trapping, Release, Spawning.
+#' @param scope download NPT data only or the full FINS domain
+#' @param startDate query start date formated as month, day, year; '01/01/2019'
+#' @param endDate query end date formated as month, day, year; '01/01/2020'
+#'
+#' @return a data frame of all returned data from FINS query
 #' @import httr
-dnload_WeirData <- function(module = c('Trapping', 'Release', 'Spawning'),
-                            apikey, startDate, endDate){
+#'
+get_FINSdata <- function(module = c('Trapping', 'Release', 'Spawning'),
+                            scope = c('NPT','FINS Domain'),
+                            startDate, endDate){
+
+  stopifnot(!is.na(startDate)|
+            !is.na(endDate)|
+            as.Date(endDate, "%m/%d/%Y") > as.Date(startDate, "%m/%d/%Y")
+            )
+
+  module <- match.arg(module)
+  scope <- match.arg(scope)
+
+  if(scope == 'NPT'){
+    scope = NULL
+    }
+
+  if(scope == 'FINS Domain'){
+    scope = 'domain'
+  }
 
   # assign user agent to the GitHub repo for this package
   #ua = httr::user_agent('https://github.com/ryankinzer/cuyem')
@@ -20,8 +43,9 @@ dnload_WeirData <- function(module = c('Trapping', 'Release', 'Spawning'),
 
   # build query for FINS
   queryList = list(apikey = 'cGsvN7QlsSj0Uiy2kOLECQ8UsNhdt2bj',#apikey,
-                   startDate = '01/01/1990',#
-                   endDate = '01/01/2020')#
+                   startDate = startDate,#
+                   endDate = endDate,
+                   scope = scope)#
 
   # send query to FINS
   httr::modify_url(url_req, query = queryList)
