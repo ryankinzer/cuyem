@@ -26,12 +26,13 @@ get_FINSdata <- function(module = c('Trapping', 'Release', 'Spawning'),
   module <- match.arg(module)
   scope <- match.arg(scope)
 
-  if(scope == 'NPT'){
-    scope = NULL
-    }
 
   if(scope == 'FINS Domain'){
     scope = 'domain'
+  }
+
+  if(scope == 'NPT'){
+    scope = NULL
   }
 
   # assign user agent to the GitHub repo for this package
