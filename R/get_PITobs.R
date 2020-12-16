@@ -11,12 +11,12 @@
 #' @param species Species to query. for window counts. Possible choices are: Chinook, Coho, Steelhead, Sockeye
 #' @param run
 #' @param rear_type
-#' @param start_date Start date with format mm/dd/yyyy
-#' @param end_date End date with format mm/dd/yyyy
+#' @param start_date Observation start date with format mm/dd/yyyy
+#' @param end_date Observation end date with format mm/dd/yyyy
 #'
 #' @source \url{http://www.cbr.washington.edu/dart}
 #'
-#' @import httr
+#' @import httr, lubridate
 #' @export
 #' @return NULL
 #' @examples
@@ -172,8 +172,61 @@ get_PITobs = function(query_type = c('obs_site', 'release_site'),
     stop
   }
 
-  dat <- parsed[!is.na(parsed$`Tag ID`),] # need to remove empty rows with metadata and bottom header row
-  dat <- dat[dat$`Tag ID` != 'Tag ID',]
+  names(parsed) <- gsub(' ','_',tolower(names(parsed)))
+
+  dat <- parsed[!is.na(parsed$tag_id),] # need to remove empty rows with metadata and bottom header row
+  dat <- dat[dat$tag_id != 'Tag ID',]
+
+  # add life stage and filter out juveniles.
+  dat <- dat %>%
+    mutate(
+    stage = gsub(' ','',stage),
+    sprrt = ifelse(nchar(sprrt) == '2',paste0(spp_code,sprrt),sprrt),
+    species =  case_when(  #sprrt is only 3 characters long with obs dat and 2 characters with releae_dat.
+      substr(sprrt,1,1) == '1' ~ 'Chinook salmon',
+      substr(sprrt,1,1) == '2' ~ 'Coho salmon',
+      substr(sprrt,1,1) == '3' ~ 'Steelhead',
+      substr(sprrt,1,1) == '4' ~ 'Sockeye salmon',
+      TRUE ~ 'Unknown'
+    ),
+    run =  case_when(
+      substr(sprrt,2,2) == '1' ~ 'Spring',
+      substr(sprrt,2,2) == '2' ~ 'Summer',
+      substr(sprrt,2,2) == '3' ~ 'Fall',
+      substr(sprrt,2,2) == '4' ~ 'Winter',
+      substr(sprrt,2,2) == '5' ~ 'Unknown',
+      TRUE ~ 'Unknown'
+    ),
+    rear =  case_when(
+      grepl('W', sprrt) ~ 'Natural',
+      grepl('H', sprrt) ~ 'Hatchery',
+      TRUE ~ 'Unknown'
+    ),
+    obs_time = lubridate::ymd_hms(obs_time),
+    release_date = lubridate::ymd(release_date),
+    release_year = lubridate::year(release_date),
+    min_time = lubridate::ymd_hms(min_time),
+    max_time = lubridate::ymd_hms(max_time),
+    travel_days = as.numeric(travel_days),
+    length = as.numeric(length),
+    tag_season = case_when(
+      lubridate::month(release_date) <= 6 ~ 'Spring',
+      between(lubridate::month(release_date),7,8) ~ 'Summer',
+      lubridate::month(release_date) >= 9 ~ 'Fall',
+      TRUE ~ 'Unknown'
+    )
+    )
+
+  if(query_type == 'release_site'){
+    dat <- dat %>%
+      mutate(total_rkm = map(site_rkm, function(x){  # site_rkm only in release dat total_rkm already exists
+        str_split(x, '\\.', simplify = TRUE) %>%
+          as.numeric() %>%
+          sum()
+      })
+      ) %>%
+      unnest(cols = total_rkm)
+  }
 
   return(dat)
 }
