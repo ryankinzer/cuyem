@@ -36,6 +36,7 @@ get_PITobs = function(query_type = c('obs_site', 'release_site'),
   query_type <- match.arg(query_type)
 
   stopifnot(!is.null(start_date)|!is.null(end_date))
+  stopifnot(!is.na(as.Date(start_date, format ='%m/%d/%Y'))|!is.na(as.Date(end_date, format ='%m/%d/%Y')))
 
   #stopifnot(!is.null(obs_year), obs_year >= 1989) #spawn_yr = NULL, #1988 to current for GRA and 1995 for B2A
 
