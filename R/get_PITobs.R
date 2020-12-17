@@ -36,6 +36,7 @@ get_PITobs = function(query_type = c('obs_site', 'release_site'),
   query_type <- match.arg(query_type)
 
   stopifnot(!is.null(start_date)|!is.null(end_date))
+  stopifnot(grepl('\\d{2}/\\d{2}/\\d{4}', start_date)|grepl('\\d{2}/\\d{2}/\\d{4}', end_date))
 
   #stopifnot(!is.null(obs_year), obs_year >= 1989) #spawn_yr = NULL, #1988 to current for GRA and 1995 for B2A
 
@@ -213,6 +214,11 @@ get_PITobs = function(query_type = c('obs_site', 'release_site'),
       lubridate::month(release_date) <= 6 ~ 'Spring',
       between(lubridate::month(release_date),7,8) ~ 'Summer',
       lubridate::month(release_date) >= 9 ~ 'Fall',
+      TRUE ~ 'Unknown'
+    ),
+    migration_year = case_when(
+      lubridate::month(release_date) <= 6 ~ as.character(lubridate::year(release_date)),
+      lubridate::month(release_date) >= 7 ~ as.character(lubridate::year(release_date)+1),
       TRUE ~ 'Unknown'
     )
     )
