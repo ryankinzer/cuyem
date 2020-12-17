@@ -36,7 +36,7 @@ get_PITobs = function(query_type = c('obs_site', 'release_site'),
   query_type <- match.arg(query_type)
 
   stopifnot(!is.null(start_date)|!is.null(end_date))
-  stopifnot(!is.na(as.Date(start_date, format ='%m/%d/%Y'))|!is.na(as.Date(end_date, format ='%m/%d/%Y')))
+  stopifnot(str_detect(start_date, '[\\d]{2}/[\\d]{2}/[\\d]{4}')|str_detect(end_date, '[\\d]{2}/[\\d]{2}/[\\d]{4}'))
 
   #stopifnot(!is.null(obs_year), obs_year >= 1989) #spawn_yr = NULL, #1988 to current for GRA and 1995 for B2A
 
@@ -46,11 +46,11 @@ get_PITobs = function(query_type = c('obs_site', 'release_site'),
   rear_type <- match.arg(rear_type, several.ok = FALSE)
 
   # set up default start and end days
-  start_day <- gsub('-','/',substr(as.Date(start_date, format ='%m/%d/%Y'),6,10))
-  syear <- substr(as.Date(start_date, format ='%m/%d/%Y'), 1,4)
+  start_day <- substr(start_date,1,5)
+  syear <- substr(start_date, 7,10)
 
-  end_day <- gsub('-','/',substr(as.Date(end_date, format ='%m/%d/%Y'),6,10))
-  eyear <- substr(as.Date(end_date, format ='%m/%d/%Y'), 1,4)
+  end_day <- substr(end_date,1,5)
+  eyear <- substr(end_date, 7,10)
 
   {if(as.numeric(eyear) - as.numeric(syear) > 1) stop("year range must be less than 2 years")}
 
