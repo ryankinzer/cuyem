@@ -20,37 +20,42 @@ data_clean <- data %>%
     ESU_DPS = 'Snake River Spring/Summer-run Chinook Salmon ESU',
     MPG = 'Grande Ronde / Imnaha',
     POP_NAME = case_when(
-      River %in% c('Bear Creek', 'Hurricane Creek', 'Lostine River', 'Parsnip Creek', 'Prairie Creek', 'Wallowa River') ~ 'Lostine River',
       River %in% c('Big Sheep Creek', 'Lick Creek', 'Little Sheep Creek') ~ 'Big Sheep Creek',
-      River %in% c('Imnaha River', 'Spring Creek') ~ 'Imnaha River mainstem'
+      River == 'Imnaha River' ~ 'Imnaha River mainstem',
+      River %in% c('Bear Creek', 'Hurricane Creek', 'Lostine River', 'Parsnip Creek', 'Prairie Creek', 'Spring Creek', 'Wallowa River') ~ 'Lostine River',
+      River == 'Minam River' ~ 'Minam River',
+      River == 'Wenaha River' ~ 'Wenaha River'
     ),
     TRT_POPID = case_when(
-      River %in% c('Bear Creek', 'Hurricane Creek', 'Lostine River', 'Parsnip Creek', 'Prairie Creek', 'Wallowa River') ~ 'GRLOS',
+      River %in% c('Bear Creek', 'Hurricane Creek', 'Lostine River', 'Parsnip Creek', 'Prairie Creek', 'Spring Creek', 'Wallowa River') ~ 'GRLOS',
+      River == 'Minam River' ~ 'GRMIN',
+      River == 'Wenaha River' ~ 'GRWEN',
       River %in% c('Big Sheep Creek', 'Lick Creek', 'Little Sheep Creek') ~ 'IRBSH',
-      River %in% c('Imnaha River', 'Spring Creek') ~ 'IRMAI'
+      River == 'Imnaha River' ~ 'IRMAI'
     ),
     Species = 'Chinook salmon',
     Run = 'Spring/summer',
-    ReportingGroup = case_when(
-      River %in% c('Lick Creek','Little Sheep Creek') ~ 'Big Sheep Creek',
-      River == 'Wallowa River' ~ 'Grande Ronde River',
-      River %in% c('Spring Creek', 'Big Sheep Creek') ~ 'Imnaha River',
-      River == 'Imnaha River' ~ 'Snake River',
-      River %in% c('Bear Creek', 'Hurricane Creek', 'Lostine River', 'Parsnip Creek', 'Prairie Creek') ~ 'Wallowa River'
+    ReportingGroup = case_when(  # in between tributary and population: transect/tributary/reporting group/population/mpg/esu
+      River %in% c('Big Sheep Creek', 'Lick Creek','Little Sheep Creek') ~ 'Big Sheep Creek',
+      River == 'Imnaha River' ~ 'Imnaha River',
+      River == 'Lostine River' ~ 'Lostine River',
+      River == 'Minam River' ~ 'Minam River',
+      River %in% c('Bear Creek', 'Hurricane Creek', 'Parsnip Creek', 'Prairie Creek', 'Spring Creek', 'Wallowa River') ~ 'Wallowa River',
+      River == 'Wenaha River' ~ 'Wenaha River'
     ),
     StreamName = River,
     TribToName = case_when(
-      River == 'Imnaha River' ~ 'Snake River',
-      River %in% c('Bear Creek', 'Lostine River', 'Hurricane Creek', 'Prairie Creek', 'Parsnip Creek') ~ 'Wallowa River',
-      River == 'Wallowa River' ~ 'Grande Ronde River',
       River %in% c('Little Sheep Creek', 'Lick Creek') ~ 'Big Sheep Creek',
-      River %in% c('Big Sheep Creek', 'Spring Creek') ~ 'Imnaha River'
+      River %in% c('Wallowa River','Wenaha River') ~ 'Grande Ronde River',
+      River == 'Big Sheep Creek' ~ 'Imnaha River',
+      River == 'Imnaha River' ~ 'Snake River',
+      River %in% c('Bear Creek', 'Lostine River', 'Hurricane Creek', 'Minam River', 'Prairie Creek', 'Parsnip Creek', 'Spring Creek') ~ 'Wallowa River'
     ),
     LocationLabel = Section,
-    TransectName = NA_character_,
+    TransectName = SiteID,
     SurveyDate = mdy(gsub(' 0:00:00', '', SurveyDate)),
     SurveyYear = year(SurveyDate),
-    ActivityDate = paste0(SurveyDate, 'T00:00:00'), # redundant
+    ActivityDate = paste0(SurveyDate, 'T00:00:00'),
     ActivityId = as.integer(SurveyID),
     DatasetId = NA_integer_,
     LocationId = NA_integer_,
@@ -58,16 +63,16 @@ data_clean <- data %>%
     Pass = NA_integer_,
     StartSurvey = NA_character_,
     EndSurvey = NA_character_,
-    StartTime = NA_character_,
-    EndTime = NA_character_,
-    Observers = NA_character_,
+    StartTime = Start_Time,
+    EndTime = End_Time,
+    Observers = Surveyors,
     SurveyMethod = 'Ground',
-    GPSUnit = NA_character_,
+    GPSUnit = NA_character_, # No GPS for Carcasses.
     Datum = NA_character_,
     Weather = NA_character_,
-    Visibility = NA_character_,
-    SurveyComments = paste0('Survey_Type: ', Survey_Type, ';'),
-    SampleNumber = GeneticsNumber,  # not 100% accurate
+    Visibility = Visibility,
+    SurveyComments = paste0('Survey_Type: ', Survey_Type, '; ', Comments_SurveyEvent),
+    SampleNumber = GeneticsNumber,
     HistoricSampleNumber = NA_character_,
     CarcassSpecies = 'Chinook salmon',
     Sex = case_when(
@@ -77,13 +82,13 @@ data_clean <- data %>%
       Sex %in% c('Unk', 'UNK') ~ 'Unknown'
     ),
     ForkLength = ForkLength,
-    SpawnedOut = case_when(
+    SpawnedOut = case_when(   # we may revisit this to make sure this meets NEOR protocols.
       PreSpawn == 'Spawned' ~ 'Yes',
       PreSpawn == 'PreSpawn' ~ 'No',
       PreSpawn %in% c('', 'NotValid', 'Unknown') ~ 'Unknown',
       TRUE ~ NA_character_
     ),
-    PercentSpawned = as.integer(round(PercentSpawned, 0)),
+    PercentSpawned = if_else(Sex == 'M', NA_integer_, as.integer(round(PercentSpawned, 0))),
     OpercleLeft = if_else(grepl('LOP', OperclePunchType, ignore.case = T),
                           str_extract(OperclePunchType, '\\d?\\s*LOP'), NA_character_),
     OpercleRight = if_else(grepl('ROP', OperclePunchType, ignore.case = T),
@@ -96,23 +101,23 @@ data_clean <- data %>%
     PITCode = PIT1, # no data in PIT2
     AdiposeFinClipped = case_when(  # Assuming all Hatchery fish are ad-clipped
       grepl('ad', FinMark, ignore.case = T) ~ 'Yes',
-      Origin %in% c('Hat', 'DS.Hat', 'HON') ~ 'Yes',
-      Origin %in% c('Nat') | grepl('none', FinMark, ignore.case = T) ~ 'No',
-      TRUE ~ 'Unknown'
+      grepl('unk', FinMark, ignore.case = T) | FinMark == '' ~ 'Unknown',
+      TRUE ~ 'No'
     ),
-    CWTScanned = NA_character_,  #"CWT Y.N." doesn't really provide enough clarity
-    SnoutCollected = case_when(
-      SnoutID %in% c('CWT not Present', 'CWT not present', 'No CWT', 'Not taken', 'Not taken', NA, 'None', 'CWT Unk', 'Deleted') ~ 'No',  # this may not be perfect
-      TRUE ~ 'Yes'
+    CWTScanned = if_else(CWT.Y.N. == 'Unk', 'Unknown', CWT.Y.N.),
+    SnoutCollected = case_when(   # This may need to be revisited
+      grepl('\\d{2}[[:alpha:]]{1}\\d{4}', SnoutID) ~ 'Yes',
+      grepl('DB\\d{3}', SnoutID) ~ 'Yes',
+      TRUE ~ 'No'
     ),
     Fins = NA_character_,
     Scales = NA_character_,
     Otolith = NA_character_,
     Count = as.double(Count),
     CarcassComments = Comments,
-    Latitude = NA_character_,
+    Latitude = NA_character_, # no lat/long for carcasses
     Longitude = NA_character_,
-    RadioTag = as.character(RadioTag),
+    RadioTag = if_else(RadioTag == 1, 'Yes', 'No'),
     TransmitterType = NA_character_,
     Vendor = NA_character_,
     SerialNumber = NA_character_,
@@ -124,13 +129,13 @@ data_clean <- data %>%
     TagsJaw = NA_character_,
     TagsStaple = NA_character_, # didn't see anything in the database
     TagsSpaghetti = NA_character_,
-    MarksVentralFin = NA_character_,
+    MarksVentralFin = NA_character_, # Extract LV/RV from FinMark  ****************
     Notes = NA_character_,
     QAStatusId = NA_integer_,
     CWTCode = CWTcode,
     TagsPetersonDisk = NA_character_,   # didn't see anything in the database
     CarcassWPT = as.character(CarcassID),
-    DNACollected = NA_character_,
+    DNACollected = NA_character_,  # won't affect analysis
     ActivityQAStatusId = NA_integer_,
     ActivityQAComments = NA_character_,
     FieldsheetLink = as.logical(NA),
@@ -138,28 +143,33 @@ data_clean <- data %>%
     EffDt = NA_character_,
     Year = as.integer(Year),
     AboveWeir = case_when(
-      is.na(AboveOrBelowWeir) ~ NA_character_,
-      AboveOrBelowWeir == 'Above Weir' ~ 'Yes',
-      AboveOrBelowWeir %in% c('Below Weir', 'BeforeWeir', 'No Weir', '') ~ 'No',
-      AboveOrBelowWeir == 'Diversion' & Section %in% c('Foster Diversion', 'Miles Ditch','Sheep Ridge Ditch: Diversion to Fish Wheel') ~ 'Yes', # confirmed on map
+      is.na(AboveOrBelowWeir) | AboveOrBelowWeir == '' ~ NA_character_,
+      AboveOrBelowWeir %in% c('Above Weir', 'Diversion') ~ 'Yes',
+      AboveOrBelowWeir %in% c('Below Weir', 'BeforeWeir', 'No Weir', 'No weir', 'Now Weir') ~ 'No',
       TRUE ~ 'Unknown'
     ),
-    AbovePITArray = 'Yes',
-    AboveRST = 'Yes',
-    Origin = Origin,
-    Mark_Discernible = case_when(AboveWeir == 'Yes' & grepl('LOP|No', OpercleLeft) ~ TRUE,
-                                 AboveWeir == 'Yes' & grepl('ROP|No', OpercleRight) ~ TRUE, # Source of potential problem for JCAPE - includes fish when opercle right is possible, when only we need to look at opercle left.
-                                 AboveWeir == 'Yes' & grepl('OP|Lost|No', TagsPetersonDisk) ~ TRUE,
-                                 AboveWeir == 'Yes' & str_detect(TagsPetersonDisk, '\\d') ~ TRUE,
-                                 AboveWeir == 'Yes' & grepl('OP|Lost|Yes|No', TagsStaple) ~ TRUE,
-                                 TRUE ~ FALSE),
-    Recapture = case_when(AboveWeir == 'Yes' & grepl('LOP', OpercleLeft) ~ TRUE,
-                          AboveWeir == 'Yes' & grepl('ROP', OpercleRight) ~ TRUE,
-                          AboveWeir == 'Yes' & grepl('OP|Lost', TagsPetersonDisk) ~ TRUE,
-                          AboveWeir == 'Yes' & str_detect(TagsPetersonDisk, '\\d') ~ TRUE,
-                          AboveWeir == 'Yes' & grepl('OP|Lost|Yes', TagsStaple) ~ TRUE,
-                          TRUE ~ FALSE)
+    AbovePITArray = 'Yes',  # WR2 = Wallowa River Site, Wenaha=Yes, Minam=Yes. Imnaha=Yes.
+    AboveRST = case_when(
+      River %in% c('Wenaha River','Wallowa River') ~ 'No',
+      TribToName == 'Wallowa River' & !River %in% c('Minam River','Lostine River') ~ 'No',
+      River == 'Lostine River' & SiteID %in% c('LOS8','LOS8.1','LOS8.2','LOSW','LOSTULLEY') ~ 'No',
+      TRUE ~ 'Yes'
+    ),
+    Origin = case_when(
+      Origin %in% c('Nat','HON') ~ 'Natural',
+      # HON are non-clipped fish that weren't scanned in 2011. Assumed to be Naturals, but not positive b/c no CWT Scan.
+      Origin %in% c('DS.Hat','Hat') ~ 'Hatchery',
+      TRUE ~ 'Unknown'
+    ),
+    Mark_Discernible = case_when(   # We need to incorporate the SizeRecapCategory field from ODFW accdb for both Mark_Discernible and Recapture.
+      AboveWeir == 'Yes' & OPPunch %in% c('Yes','No','yes','no') ~ TRUE,
+      AboveWeir == 'Yes' & OPPunch %in% c('unk','Unk','') ~ FALSE,
+      TRUE ~ FALSE),
+    Recapture = case_when(
+      AboveWeir == 'Yes' & OPPunch %in% c('Yes', 'yes') ~ TRUE,
+      TRUE ~ FALSE)
   ) %>%
+  filter(MarkRecapSizeCategory %in% c('Adult','Adult NA')) %>%  # This probably won't live here forever.
   select(
     ESU_DPS,
     MPG,
