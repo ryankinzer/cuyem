@@ -12,7 +12,7 @@
 clean_reddDataNEOR <- function(data){
   {if(is.null(data))stop("carcass data must be supplied")}
 
-# NOTE: fields not captured from carcass query: "Subbasin"  'SiteID'
+# NOTE: fields not captured from carcass query: "Subbasin"
 
 # clean
 data_clean <- data %>%
@@ -20,80 +20,88 @@ data_clean <- data %>%
     ESU_DPS = 'Snake River Spring/Summer-run Chinook Salmon ESU',
     MPG = 'Grande Ronde / Imnaha',
     POP_NAME = case_when(
-      River %in% c('Bear Creek', 'Hurricane Creek', 'Lostine River', 'Parsnip Creek', 'Prairie Creek', 'Wallowa River') ~ 'Lostine River',
       River %in% c('Big Sheep Creek', 'Lick Creek', 'Little Sheep Creek') ~ 'Big Sheep Creek',
-      River %in% c('Imnaha River', 'Spring Creek') ~ 'Imnaha River mainstem'
+      River == 'Imnaha River' ~ 'Imnaha River mainstem',
+      River %in% c('Bear Creek', 'Hurricane Creek', 'Lostine River', 'Parsnip Creek', 'Prairie Creek', 'Spring Creek', 'Wallowa River') ~ 'Lostine River',
+      River == 'Minam River' ~ 'Minam River',
+      River == 'Wenaha River' ~ 'Wenaha River'
     ),
     TRT_POPID = case_when(
-      River %in% c('Bear Creek', 'Hurricane Creek', 'Lostine River', 'Parsnip Creek', 'Prairie Creek', 'Wallowa River') ~ 'GRLOS',
+      River %in% c('Bear Creek', 'Hurricane Creek', 'Lostine River', 'Parsnip Creek', 'Prairie Creek', 'Spring Creek', 'Wallowa River') ~ 'GRLOS',
+      River == 'Minam River' ~ 'GRMIN',
+      River == 'Wenaha River' ~ 'GRWEN',
       River %in% c('Big Sheep Creek', 'Lick Creek', 'Little Sheep Creek') ~ 'IRBSH',
-      River %in% c('Imnaha River', 'Spring Creek') ~ 'IRMAI'
+      River == 'Imnaha River' ~ 'IRMAI'
     ),
     Species = 'Chinook salmon',
     Run = 'Spring/summer',
-    ReportingGroup = case_when(
-      River %in% c('Lick Creek','Little Sheep Creek') ~ 'Big Sheep Creek',
-      River == 'Wallowa River' ~ 'Grande Ronde River',
-      River %in% c('Spring Creek', 'Big Sheep Creek') ~ 'Imnaha River',
-      River == 'Imnaha River' ~ 'Snake River',
-      River %in% c('Bear Creek', 'Hurricane Creek', 'Lostine River', 'Parsnip Creek', 'Prairie Creek') ~ 'Wallowa River'
+    ReportingGroup = case_when(  # in between tributary and population: transect/tributary/reporting group/population/mpg/esu
+      River %in% c('Big Sheep Creek', 'Lick Creek','Little Sheep Creek') ~ 'Big Sheep Creek',
+      River == 'Imnaha River' ~ 'Imnaha River',
+      River == 'Lostine River' ~ 'Lostine River',
+      River == 'Minam River' ~ 'Minam River',
+      River %in% c('Bear Creek', 'Hurricane Creek', 'Parsnip Creek', 'Prairie Creek', 'Spring Creek', 'Wallowa River') ~ 'Wallowa River',
+      River == 'Wenaha River' ~ 'Wenaha River'
     ),
     StreamName = River,
     TribToName = case_when(
-      River == 'Imnaha River' ~ 'Snake River',
-      River %in% c('Bear Creek', 'Lostine River', 'Hurricane Creek', 'Prairie Creek', 'Parsnip Creek') ~ 'Wallowa River',
-      River == 'Wallowa River' ~ 'Grande Ronde River',
       River %in% c('Little Sheep Creek', 'Lick Creek') ~ 'Big Sheep Creek',
-      River %in% c('Big Sheep Creek', 'Spring Creek') ~ 'Imnaha River'
+      River %in% c('Wallowa River','Wenaha River') ~ 'Grande Ronde River',
+      River == 'Big Sheep Creek' ~ 'Imnaha River',
+      River == 'Imnaha River' ~ 'Snake River',
+      River %in% c('Bear Creek', 'Lostine River', 'Hurricane Creek', 'Minam River', 'Prairie Creek', 'Parsnip Creek', 'Spring Creek') ~ 'Wallowa River'
     ),
     LocationLabel = Section,
-    TransectName = NA_character_,
+    TransectName = SiteID,
     SurveyDate = mdy(gsub(' 0:00:00', '', SurveyDate)),
     SurveyYear = year(SurveyDate),
-    ActivityDate = paste0(SurveyDate, 'T00:00:00'), # redundant
+    ActivityDate = paste0(SurveyDate, 'T00:00:00'),
     TargetSpecies = 'Chinook salmon',
     Pass = NA_integer_,
     StartSurvey = NA_character_,
     EndSurvey = NA_character_,
-    StartTime = NA_character_,
-    EndTime = NA_character_,
-    Observers = NA_character_,
+    StartTime = Start_Time,
+    EndTime = End_Time,
+    Observers = Surveyors,
     SurveyMethod = 'Ground',
-    GPSUnit = NA_character_,
-    Datum = NA_character_,
+    GPSUnit = GPSnumber,
+    Datum = NA_character_, # No record of this. WGS84?
     Weather = NA_character_,
-    Visibility = NA_character_,
-    SurveyComments = paste0('Site_Classification: ', Site_Classification, '; ', 'Survey_Type: ', Survey_Type, ';'), # metadata capture
+    Visibility = Visibility,
+    SurveyComments = paste0('Survey_Type: ', Survey_Type, '; ', Comments_SurveyEvent),
     PreviousRedds = NA_integer_,
     NewRedds = NewRedds,
     FieldsheetLink = NA_character_,
     ReddSpecies = 'Chinook salmon',
     Count = NA_integer_,
-    WPTName = as.character(WptAuto),
-    Latitude = as.character(Latitude),
-    Longitude = as.character(Longitude),
-    WPTType = 'New Redd',  # They don't record prev redds, so all new?
-    WPTComments = NA_character_,
+    WPTName = as.character(WptID_AutoNum),
+    Latitude = as.character(Lat),
+    Longitude = as.character(Long),
+    WPTType = 'New Redd',
+    WPTComments = Notes,
     QAStatusId = NA_integer_,
     ActivityQAStatusId = NA_integer_,
     ActivityQAComments = NA_character_,
     DatasetId = NA_integer_,
-    LocationId = NA_integer_, # SiteID can't be git into here as integer,  # is this correct?
-    ActivityId = ReddID,  # this should be correct.
+    LocationId = NA_integer_, # If needed we could apply a unique numeric identifier to the tbl_Sites for use here.
+    ActivityId = SurveyID,  # tbl_SurveyEvents: SurveyID=ReddID
     QAStatusName = NA_character_,
-    ProjectId = NA_integer_,
+    ProjectId = 11059, # GRSME: 11059
     EffDt = NA_character_,
     Year = Year,
     AboveWeir = case_when(
-      is.na(AboveOrBelowWeir) ~ NA_character_,
-      AboveOrBelowWeir == 'Above Weir' ~ 'Yes',
-      AboveOrBelowWeir %in% c('Below Weir', 'BeforeWeir', 'No Weir', '') ~ 'No',
-      AboveOrBelowWeir == 'Diversion' & Section %in% c('Foster Diversion', 'Miles Ditch','Sheep Ridge Ditch: Diversion to Fish Wheel') ~ 'Yes', # confirmed on map
+      is.na(AboveOrBelowWeir) | AboveOrBelowWeir == '' ~ NA_character_,
+      AboveOrBelowWeir %in% c('Above Weir', 'Diversion') ~ 'Yes',
+      AboveOrBelowWeir %in% c('Below Weir', 'BeforeWeir', 'No Weir', 'No weir', 'Now Weir') ~ 'No',
       TRUE ~ 'Unknown'
     ),
-    AbovePITArray = 'Yes',
-    AboveRST = 'Yes'
-  ) %>%
+    AbovePITArray = 'Yes',  # WR2 = Wallowa River Site, Wenaha=Yes, Minam=Yes. Imnaha=Yes.
+    AboveRST = case_when(
+      River %in% c('Wenaha River','Wallowa River') ~ 'No',
+      TribToName == 'Wallowa River' & !River %in% c('Minam River','Lostine River') ~ 'No',
+      River == 'Lostine River' & SiteID %in% c('LOS8','LOS8.1','LOS8.2','LOSW','LOSTULLEY') ~ 'No',
+      TRUE ~ 'Yes'
+  )) %>%
   select(
     ESU_DPS,
     MPG,
