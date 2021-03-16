@@ -11,7 +11,7 @@
 #'
 #' @examples
 #' get_NOSAests()
-get_NOSAests <- function(redd_data, carcass_data, mr_ests){
+get_NOSAests <- function(redd_data, carcass_data, mr_ests, split_age = FALSE){
 
   r_df <- redd_data %>% filter(ReportingGroup != 'Meadow Creek') %>%
     mutate(r_EffDt = lubridate::ymd_hms(EffDt),
@@ -232,7 +232,7 @@ get_NOSAests <- function(redd_data, carcass_data, mr_ests){
            HOSAij_upr = HOSAij + 1.96*HOSAij_SE
     )
 
-
+if(split_age){
   ch_car_age <- c_df %>%
     filter(Species == 'Chinook salmon',
            Run == 'Spring/summer',
@@ -332,7 +332,7 @@ get_NOSAests <- function(redd_data, carcass_data, mr_ests){
            pHOSej_lwr = pHOSej - 1.96*pHOSej_SE,
            pHOSej_upr = pHOSej + 1.96*pHOSej_SE,
            pHOSej_lwr = if_else(pHOSej_lwr < 0, 0, pHOSej_lwr))
-
+}
   ch_pop_df <- ch_pop_df %>%
     mutate_each(funs(replace(., which(is.nan(.)), NA)))
 

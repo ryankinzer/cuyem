@@ -4,7 +4,7 @@
 \alias{get_NOSAests}
 \title{Estimate NOSA DES}
 \usage{
-get_NOSAests(redd_data, carcass_data, mr_ests)
+get_NOSAests(redd_data, carcass_data, mr_ests, split_age = FALSE)
 }
 \arguments{
 \item{redd_data}{clean redd data}
