@@ -3,13 +3,13 @@
 #' @param data Data obtained from premade query in ODFW Access DB. !!Export data as text file, comma delim, headers included.!!
 #' @param data Import text file with:  read.delim(file = 'path_to_file.txt', sep = ',', header = TRUE)
 #' @export
-#' @import dplyr, lubridate
+#' @import dplyr lubridate
 #' @author Tyler T. Stright
 #' @examples
-#' clean_reddDataNEOR(redd_dat)
+#' clean_reddData_NEOR(redd_dat)
 #'
 
-clean_reddDataNEOR <- function(data){
+clean_reddData_NEOR <- function(data){
   {if(is.null(data))stop("carcass data must be supplied")}
 
 # NOTE: fields not captured from carcass query: "Subbasin"
