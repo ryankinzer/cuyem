@@ -53,7 +53,7 @@ data_clean <- data %>%
     ),
     LocationLabel = Section,
     TransectName = SiteID,
-    SurveyDate = mdy(gsub(' 0:00:00', '', SurveyDate)),
+    SurveyDate = ymd(gsub('T00:00:00', '', SurveyDate)),
     SurveyYear = year(SurveyDate),
     ActivityDate = paste0(SurveyDate, 'T00:00:00'),
     ActivityId = as.integer(SurveyID),
@@ -82,13 +82,18 @@ data_clean <- data %>%
       Sex %in% c('Unk', 'UNK') ~ 'Unknown'
     ),
     ForkLength = ForkLength,
-    SpawnedOut = case_when(   # we may revisit this to make sure this meets NEOR protocols.
-      PreSpawn == 'Spawned' ~ 'Yes',
-      PreSpawn == 'PreSpawn' ~ 'No',
-      PreSpawn %in% c('', 'NotValid', 'Unknown') ~ 'Unknown',
+    PercentSpawned = if_else(Sex == 'M', NA_integer_, as.integer(round(PercentSpawned, 0))),
+    # SpawnedOut = case_when(   # First Go - remove if other logic is best
+    #   PreSpawn == 'Spawned' ~ 'Yes',
+    #   PreSpawn == 'PreSpawn' ~ 'No',
+    #   PreSpawn %in% c('', 'NotValid', 'Unknown') ~ 'Unknown',
+    #   TRUE ~ NA_character_
+    # ),
+    SpawnedOut = case_when(   # anti-PrespawnMort?
+      PercentSpawned < 50  ~ 'No', # Indicates a Prespawn Mortality
+      PercentSpawned >= 50 ~ 'Yes', # Successful Spawner
       TRUE ~ NA_character_
     ),
-    PercentSpawned = if_else(Sex == 'M', NA_integer_, as.integer(round(PercentSpawned, 0))),
     OpercleLeft = if_else(grepl('LOP', OperclePunchType, ignore.case = T),
                           str_extract(OperclePunchType, '\\d?\\s*LOP'), NA_character_),
     OpercleRight = if_else(grepl('ROP', OperclePunchType, ignore.case = T),
@@ -104,7 +109,7 @@ data_clean <- data %>%
       grepl('unk', FinMark, ignore.case = T) | FinMark == '' ~ 'Unknown',
       TRUE ~ 'No'
     ),
-    CWTScanned = if_else(CWT.Y.N. == 'Unk', 'Unknown', CWT.Y.N.),
+    CWTScanned = if_else(`CWT(Y/N)` == 'Unk', 'Unknown', `CWT(Y/N)`),
     SnoutCollected = case_when(   # This may need to be revisited
       grepl('\\d{2}[[:alpha:]]{1}\\d{4}', SnoutID) ~ 'Yes',
       grepl('DB\\d{3}', SnoutID) ~ 'Yes',
@@ -144,7 +149,7 @@ data_clean <- data %>%
     Year = as.integer(Year),
     AboveWeir = case_when(
       is.na(AboveOrBelowWeir) | AboveOrBelowWeir == '' ~ NA_character_,
-      AboveOrBelowWeir %in% c('Above Weir', 'Diversion') ~ 'Yes',
+      AboveOrBelowWeir %in% c('Above Weir', 'Diversion','Lostine Weir') ~ 'Yes',
       AboveOrBelowWeir %in% c('Below Weir', 'BeforeWeir', 'No Weir', 'No weir', 'Now Weir') ~ 'No',
       TRUE ~ 'Unknown'
     ),
@@ -156,20 +161,28 @@ data_clean <- data %>%
       TRUE ~ 'Yes'
     ),
     Origin = case_when(
-      Origin %in% c('Nat','HON') ~ 'Natural',
+      Origin %in% c('Nat') ~ 'Natural',
       # HON are non-clipped fish that weren't scanned in 2011. Assumed to be Naturals, but not positive b/c no CWT Scan.
-      Origin %in% c('DS.Hat','Hat') ~ 'Hatchery',
-      TRUE ~ 'Unknown'
+      Origin %in% c('DS.Hat','Hat') ~ 'Hatchery',  # DS.Hat = hatchery determined by Discriminate Scale Analysis...
+        # ...where hatchery was determined by the distance between the origin and first annulus..
+      TRUE ~ 'Unknown'  # HON = Unknown
     ),
-    Mark_Discernible = case_when(   # We need to incorporate the SizeRecapCategory field from ODFW accdb for both Mark_Discernible and Recapture.
-      AboveWeir == 'Yes' & OPPunch %in% c('Yes','No','yes','no') ~ TRUE,
-      AboveWeir == 'Yes' & OPPunch %in% c('unk','Unk','') ~ FALSE,
+    Mark_Discernible = case_when(
+      OPPunch %in% c('Yes','No','yes','no', 'NO')
+      & MarkRecapSizeCategory %in% c('Adult','Jack','MiniJ') ~ TRUE,
       TRUE ~ FALSE),
+    #OPPunch is the NEOR field for whether the passed upstream mark(s) are discernible on the carcass
+    #MarkRecapSizeCategory is the NEOR bread-crumb trail of whether to include/exclude carcasses in MR analyses
+    #we could use the MarkRecapSizeCategory criteria during cleaning or when stratifying data for input into cuyem functions
+    #using MarkRecapSizeCategory later would be more straightforward, otherwise we are hiding info that doesn't have anything to do
+    #with whether the mark is discernable, e.g., it was a radio-tagged carcass that was only found because of it's radio-tag
+    #similarly, above/below weir probably doesn't need to be incorporated into this variable
+    #but it all depends on how Kinzer wants to use the variable
     Recapture = case_when(
-      AboveWeir == 'Yes' & OPPunch %in% c('Yes', 'yes') ~ TRUE,
+      Mark_Discernible == TRUE & OPPunch %in% c('Yes','yes') ~ TRUE,
       TRUE ~ FALSE)
   ) %>%
-  filter(MarkRecapSizeCategory %in% c('Adult','Adult NA')) %>%  # This probably won't live here forever.
+  # filter(MarkRecapSizeCategory %in% c('Adult','Adult NA')) %>%  # This probably won't live here forever.
   select(
     ESU_DPS,
     MPG,
@@ -252,8 +265,7 @@ data_clean <- data %>%
     AboveRST,
     Origin,
     Mark_Discernible,
-    Recapture
-  )
+    Recapture)
 
 return(data_clean)
 

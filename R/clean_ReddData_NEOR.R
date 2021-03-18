@@ -53,7 +53,7 @@ data_clean <- data %>%
     ),
     LocationLabel = Section,
     TransectName = SiteID,
-    SurveyDate = mdy(gsub(' 0:00:00', '', SurveyDate)),
+    SurveyDate = ymd(gsub('T00:00:00', '', SurveyDate)),
     SurveyYear = year(SurveyDate),
     ActivityDate = paste0(SurveyDate, 'T00:00:00'),
     TargetSpecies = 'Chinook salmon',
