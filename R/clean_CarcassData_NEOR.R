@@ -59,7 +59,7 @@ data_clean <- data %>%
     ActivityId = as.integer(SurveyID),
     DatasetId = NA_integer_,
     LocationId = NA_integer_,
-    TargetSpecies = 'Chinook salmon',
+    TargetSpecies = 'S_CHN',
     Pass = NA_integer_,
     StartSurvey = NA_character_,
     EndSurvey = NA_character_,
@@ -74,7 +74,7 @@ data_clean <- data %>%
     SurveyComments = paste0('Survey_Type: ', Survey_Type, '; ', Comments_SurveyEvent),
     SampleNumber = GeneticsNumber,
     HistoricSampleNumber = NA_character_,
-    CarcassSpecies = 'Chinook salmon',
+    CarcassSpecies = 'S_CHN',
     Sex = case_when(
       Sex == 'M' ~ 'Male',
       Sex == 'F' ~ 'Female',
