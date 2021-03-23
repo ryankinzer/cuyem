@@ -20,30 +20,36 @@ clean_weirData <- function(data){
 
   #data <- mutate_all(as.character)
 
-  if(grepl('T',data$trapped_date[1])){
-    data$trapped_date = gsub('T\\d{2}:\\d{2}:\\d{2}', '', data$trapped_date)
-    data$trapped_date = lubridate::ymd(data$trapped_date)
-    } else {
-    data$trapped_date = lubridate::mdy(data$trapped_date)
-    }
+  # if(grepl('T',data$trapped_date[1])){
+  #   data$trapped_date = gsub('T\\d{2}:\\d{2}:\\d{2}', '', data$trapped_date)
+  #   data$trapped_date = lubridate::ymd(data$trapped_date)
+  #   } else {
+  #   data$trapped_date = lubridate::mdy(data$trapped_date)
+  #   }
+
+
 
   trap_df <- data %>%
-    mutate(trap_year = lubridate::year(trapped_date)) %>%
+    mutate(trapped_date = lubridate::ymd(trapped_date),
+           trap_year = lubridate::year(trapped_date)) %>%
     mutate(weir = str_split(trap, ' - ', simplify =  TRUE)[,1]) %>%
     mutate(stream = str_replace(weir, ' Weir', ''),
            stream = str_replace(stream, 'Upper ', '')) %>%
     #mutate(applied_marks = gsub(' ', '', applied_marks)) %>%
     mutate(release_up = case_when(disposition == 'Released' &
-                                    grepl('Above|Upstream', release_site) ~ TRUE,
+                                    grepl('Above|Upstream|Lostine River: Acclimation Facility', release_site) ~ TRUE,
                                   TRUE ~ FALSE)) %>%
     mutate(release_dwn = case_when(disposition == 'Released' &
                                      grepl('Below|Downstream', release_site) ~ TRUE,
                                    living_status %in% c('DOA', 'TrapMort') &
                                      grepl('Below|Downstream', moved_to) ~ TRUE, # added to catch downstream morts
                                    TRUE ~ FALSE)) %>%
-    mutate(marked = case_when(release_up & grepl('OP', applied_marks) ~ TRUE,
+    mutate(marked = case_when(
+                              release_up & grepl('RT', applied_tags) & trap_year == 2011 ~ FALSE,
+                              release_up & grepl('OP', applied_marks) ~ TRUE,
                               release_up & grepl('OP', applied_tags) ~ TRUE,
-                              TRUE~FALSE),
+                              TRUE~FALSE
+                              ),
            recapped = case_when(release_dwn & grepl('OP', existing_marks) ~ TRUE,
                                 release_dwn & grepl('OP', existing_tags) ~ TRUE,
                                 TRUE ~ FALSE),

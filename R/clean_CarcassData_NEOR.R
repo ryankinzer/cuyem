@@ -180,7 +180,12 @@ data_clean <- data %>%
     #but it all depends on how Kinzer wants to use the variable
     Recapture = case_when(
       Mark_Discernible == TRUE & OPPunch %in% c('Yes','yes') ~ TRUE,
-      TRUE ~ FALSE)
+      TRUE ~ FALSE),
+    CWT_Age = ifelse(CWTAge>0,CWTAge, NA),
+    VIE_Age = NA_integer_,
+    PIT_Age = ifelse(PITage>0,PITage, NA),
+    Fin_Age = NA_integer_,
+    Scale_Age = ifelse(BestScaleAge>0,BestScaleAge, NA)
   ) %>%
   # filter(MarkRecapSizeCategory %in% c('Adult','Adult NA')) %>%  # This probably won't live here forever.
   select(
@@ -265,7 +270,12 @@ data_clean <- data %>%
     AboveRST,
     Origin,
     Mark_Discernible,
-    Recapture)
+    Recapture,
+    CWT_Age,
+    VIE_Age,
+    PIT_Age,
+    Fin_Age,
+    Scale_Age)
 
 return(data_clean)
 
