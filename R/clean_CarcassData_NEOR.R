@@ -181,6 +181,7 @@ data_clean <- data %>%
     Recapture = case_when(
       Mark_Discernible == TRUE & OPPunch %in% c('Yes','yes') ~ TRUE,
       TRUE ~ FALSE),
+    MR_strata = MarkRecapSizeCategory,
     CWT_Age = ifelse(CWTAge>0,CWTAge, NA),
     VIE_Age = NA_integer_,
     PIT_Age = ifelse(PITage>0,PITage, NA),
@@ -271,6 +272,7 @@ data_clean <- data %>%
     Origin,
     Mark_Discernible,
     Recapture,
+    MR_strata,
     CWT_Age,
     VIE_Age,
     PIT_Age,

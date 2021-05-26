@@ -8,7 +8,8 @@ get_MRests(
   weir_data,
   carcass_data = NULL,
   species = c("Chinook", "Steelhead"),
-  alpha = 0.05
+  alpha = 0.05,
+  ...
 )
 }
 \arguments{

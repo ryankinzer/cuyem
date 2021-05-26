@@ -4,7 +4,14 @@
 \alias{est_abundance}
 \title{Estimate Abundance}
 \usage{
-est_abundance(n1, n2, m2, method = c("adjusted Peterson"), alpha = 0.05)
+est_abundance(
+  n1,
+  n2,
+  m2,
+  method = c("adjusted Peterson"),
+  CItype = c("normal", "binomial", "Poisson", "hypergeometric"),
+  alpha = 0.05
+)
 }
 \arguments{
 \item{n1}{a vector of the number of fish marked and released at the first capture occasion; M}
@@ -12,6 +19,10 @@ est_abundance(n1, n2, m2, method = c("adjusted Peterson"), alpha = 0.05)
 \item{n2}{a vector of the number of fish captured at the second occasion; C}
 
 \item{m2}{a vector of the number of fish captured at the second occasion with a mark; R}
+
+\item{method}{M/R estimate type; "adjusted peterson',}
+
+\item{CItype}{c('normal','binomial', 'poisson', 'hypergeometric')}
 
 \item{alpha}{type I error rate.  Default is set at 0.05 to produce 95\%
 confidence intervals.}

@@ -56,6 +56,7 @@ clean_carcassData <- function(data){
                                  AboveWeir == 'Yes' & str_detect(TagsPetersonDisk, '\\d') ~ TRUE,
                                  AboveWeir == 'Yes' & grepl('OP|Lost|Yes', TagsStaple) ~ TRUE,
                                 TRUE ~ FALSE)) %>%
+    mutate(MR_strata = NA) %>%
     select(ESU_DPS:Run, ReportingGroup, StreamName, TribToName, LocationLabel, TransectName, SurveyYear, everything())
 
   return(dat)
