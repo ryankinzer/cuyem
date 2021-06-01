@@ -20,12 +20,12 @@ clean_weirData <- function(data){
 
   #data <- mutate_all(as.character)
 
-  # if(grepl('T',data$trapped_date[1])){
-  #   data$trapped_date = gsub('T\\d{2}:\\d{2}:\\d{2}', '', data$trapped_date)
-  #   data$trapped_date = lubridate::ymd(data$trapped_date)
-  #   } else {
-  #   data$trapped_date = lubridate::mdy(data$trapped_date)
-  #   }
+  if(grepl('T',data$trapped_date[1])){
+    data$trapped_date = gsub('T\\d{2}:\\d{2}:\\d{2}', '', data$trapped_date)
+    data$trapped_date = lubridate::ymd(data$trapped_date)
+    } else {
+    data$trapped_date = lubridate::mdy(data$trapped_date)
+    }
 
 
 
