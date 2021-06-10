@@ -9,10 +9,10 @@
 #' tmp <- clean_RSTdata(rst_dat)
 clean_RSTdata <- function(data){
   {if(is.null(data))stop("RST data must be supplied")}
-  
+
   # snake-ize field names
   names(data) <- gsub(' ','_',tolower(names(data)))
-  
+
   # P4 SRR Verbose list for join ----
   p4_srr_verbose <- structure(list(speciesrunreartype = c("F0W", "ERU", "7RW", "I0W", "15U", "55U",
                                                     "85U", "25U", "13U", "53U", "C0W", "15H", "55H", "85H", "25H",
@@ -58,19 +58,19 @@ clean_RSTdata <- function(data){
                                          "Tench", "Warmouth", "Whitefish - Lake", "Dace species", "Sculpin - Mottled",
                                          "Sculpin - Torrent", "Sucker - Longnose", "Sucker species", "No Fish Day")),
                         row.names = c(NA, -98L), class = c("tbl_df", "tbl", "data.frame"))
-  
+
   # rename, fix datatypes
   trap_df <- data %>%
-    filter(!grepl('ADULT', textcomments)) %>%  # remove adults
     rename(
       nfish = pdv1,
-      trap_start_datetime = spdv1, 
-      trap_end_datetime = spdv2, 
-      hours_sampled = spdv3, 
-      staff_gauge = spdv4, 
-      trap_rpm = spdv5, 
-      weather = spdv6, 
-      operational_condition = spdv7) %>%
+      trap_start_datetime = spdv1,
+      trap_end_datetime = spdv2,
+      hours_sampled = spdv3,
+      staff_gauge_cm = spdv4,
+      trap_rpm = spdv5,
+      weather = spdv6,
+      operational_condition = spdv7,
+      staff_gauge_ft= spdv8) %>%
     separate(locationlabel, into = c('streamname', 'trap'), sep=': ') %>%
     # Do we need to modify other datetime fields?
     separate(eventdate, into = c('event_date', 'event_time'), sep='T') %>% # this is the only trustworthy datetime, filled and standardized by P4
@@ -83,7 +83,7 @@ clean_RSTdata <- function(data){
         grepl('Recapture', eventtype) &&  # this avoids including Mortality RE/RC
           grepl('RE', conditionalcomments) &&
           grepl('RC', textcomments), 1, 0),
-      mortality = 
+      mortality =
         if_else(grepl('M', conditionalcomments) &&
                   grepl('TRP|PRD|HND|DOA|TG', textcomments), 1, 0),
       origin = case_when(
@@ -98,25 +98,27 @@ clean_RSTdata <- function(data){
         species == 'Pacific Lamprey' & grepl('AL', conditionalcomments) ~ 'Adult',
         # All Hatchery
         origin == 'Hatchery' ~ NA_character_, # probably shouldn't just assume 'Smolt'
-        # Steelhead
-        grepl('Steelhead', species) ~ 'unknown',  # how do we want to deal with steelhead?
+        # Steelhead - may need to update this.
+        grepl('Steelhead', species) & month(event_date %in% 1:6) ~ 'Winter/Spring',
+        grepl('Steelhead', species) & month(event_date %in% 7:12) ~ 'Summer/Fall',
         # Spring/summer Chinook - this doesn't deal with Fall chinook properly.
-        origin == 'Natural' & month(event_date) %in% c(1:6) & length<50 ~ 'YOY',  
-        origin == 'Natural' & month(event_date) %in% c(1:6) & length>50 ~ 'Smolt',
+        grepl('YOY', textcomments) ~ 'YOY',
+        origin == 'Natural' & month(event_date) %in% c(1:6) ~ 'Smolt',
         origin == 'Natural' & month(event_date) %in% c(7:9) ~ 'Parr',
         origin == 'Natural' & month(event_date) %in% c(10:12) ~ 'Presmolt',
         TRUE ~ NA_character_
       ),
       condition_factor = (weight/length^3)*100000
       ) %>%
-    select(trap, filename, event_date, event_time, origin, species, speciesrunreartype,
-           pittag, length, weight, condition_factor, lifestage, nfish, operational_condition,
-           conditionalcomments, textcomments, tagger, pit_tag_issued, efficiency_mark, 
+    select(trap, filename, event_date, event_time, trap_start_datetime, trap_end_datetime,
+           hours_sampled, operational_condition, sessionnote, origin, species, speciesrunreartype,
+           eventtype, pittag, length, weight, condition_factor, lifestage, nfish, broodyear,
+           conditionalcomments, textcomments, tagger, pit_tag_issued, efficiency_mark,
            efficiency_recap, mortality,
            everything()) %>%
   select(-cdms_origin) # prevents confusion with new origin field.
-  
-  
-    
- return(trap_df) 
+
+
+
+ return(trap_df)
 }
