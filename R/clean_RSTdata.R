@@ -99,8 +99,8 @@ clean_RSTdata <- function(data){
         # All Hatchery
         origin == 'Hatchery' ~ NA_character_, # probably shouldn't just assume 'Smolt'
         # Steelhead - may need to update this.
-        grepl('Steelhead', species) & month(event_date %in% 1:6) ~ 'Winter/Spring',
-        grepl('Steelhead', species) & month(event_date %in% 7:12) ~ 'Summer/Fall',
+        grepl('Steelhead', species) & month(event_date) %in% c(1:6) ~ 'Winter/Spring',
+        grepl('Steelhead', species) & month(event_date) %in% c(7:12) ~ 'Summer/Fall',
         # Spring/summer Chinook - this doesn't deal with Fall chinook properly.
         grepl('YOY', textcomments) ~ 'YOY',
         origin == 'Natural' & month(event_date) %in% c(1:6) ~ 'Smolt',
