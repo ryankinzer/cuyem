@@ -2,6 +2,7 @@
 
 export(cades_JuvOutmigrant)
 export(cades_NOSA)
+export(clean_FCRRdata)
 export(clean_RSTdata)
 export(clean_carcassData)
 export(clean_carcassData_NEOR)
