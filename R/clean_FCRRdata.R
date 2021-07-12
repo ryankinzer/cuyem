@@ -84,7 +84,7 @@ clean_FCRRdata <- function(data){
         TRUE ~ cwt_code
       ),
       # Shuffle cwt_origin to comments
-      comments = case_when(
+      cwt_origin = case_when(
         grepl('age', cwt_origin) ~ NA_character_,
         cwt_origin == 'surrogate' ~ NA_character_,
         TRUE ~ cwt_origin)
@@ -98,13 +98,9 @@ clean_FCRRdata <- function(data){
                  names_to = 'group',
                  values_to = 'estimate') %>%
     separate(group, into = c('grouping', 'measure'), sep='_') %>%
-    mutate(measure = case_when(
-      measure %in% c('lgr', 'above') ~ paste0('esc_',  measure),
-      TRUE ~ measure)) %>%
-    mutate(ActivityDate = Sys.Date(),
-           grouping = toupper(grouping)) %>%
-    select(ActivityDate, location, species, run, SpeciesRun, return_year, age, brood_year, origin, rearing, grouping, target,
-           cwt_code, measure, estimate, comments)
+    mutate(grouping = tolower(gsub('s','',grouping))) %>%
+    select(location, species, run, SpeciesRun, return_year, age, brood_year, origin, rearing, grouping, target,
+           cwt_code, cwt_origin, measure, estimate, ActivityDate)
 
   return(data_clean)
 }
