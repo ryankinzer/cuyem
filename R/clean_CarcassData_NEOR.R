@@ -15,6 +15,10 @@ clean_carcassData_NEOR <- function(data){
 # NOTE: Fields not captured from carcass query: "Subbasin" "MEPSlength" "CWTAge" "BestAge" "PITage" "LengthAge" "AgeKey"
 # "PIT2" "BestScaleAge" "Adult_or_Jack" "MarkRecapSizeCategory" "TagFile" "ExternalMarks" "Population"
 
+  # filter for GRSME only?
+  #WHERE(b.Subbasin IN ('Imnaha', 'Wallowa-Lostine', 'Wilderness-Wenaha', 'Wilderness-Minam'))
+
+
 data_clean <- data %>%
   mutate(
     ESU_DPS = 'Snake River Spring/Summer-run Chinook Salmon ESU',
@@ -53,8 +57,8 @@ data_clean <- data %>%
     ),
     LocationLabel = Section,
     TransectName = SiteID,
-    SurveyDate = ymd(gsub('T00:00:00', '', SurveyDate)),
-    SurveyYear = year(SurveyDate),
+    SurveyDate = lubridate::ymd(gsub('T00:00:00', '', SurveyDate)),
+    SurveyYear = lubridate::year(SurveyDate),
     ActivityDate = paste0(SurveyDate, 'T00:00:00'),
     ActivityId = as.integer(SurveyID),
     DatasetId = NA_integer_,
@@ -82,7 +86,7 @@ data_clean <- data %>%
       Sex %in% c('Unk', 'UNK') ~ 'Unknown'
     ),
     ForkLength = ForkLength,
-    PercentSpawned = if_else(Sex == 'M', NA_integer_, as.integer(round(PercentSpawned, 0))),
+    PercentSpawned = if_else(Sex == 'Male', NA_integer_, as.integer(round(PercentSpawned, 0))),
     # SpawnedOut = case_when(   # First Go - remove if other logic is best
     #   PreSpawn == 'Spawned' ~ 'Yes',
     #   PreSpawn == 'PreSpawn' ~ 'No',
