@@ -30,7 +30,8 @@ clean_P4data <- function(data){
     # Fixing datatypes
     mutate(event_date = lubridate::ymd(event_date),
            across(.cols = c(trap_start_datetime, trap_end_datetime), lubridate::mdy_hm),
-           across(.cols = c(trap_rpm, staff_gauge_ft), as.double)) %>%
+           across(.cols = c(trap_rpm, staff_gauge_ft), as.double),
+           across(.cols = c(nfish, staff_gauge_cm), as.integer)) %>%
     mutate(
       pit_tag_issued = if_else(pittag == '..........', 0, 1),
       efficiency_mark = case_when(  # Bismark Brown? BBY? ********************
