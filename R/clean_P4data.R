@@ -26,8 +26,14 @@ clean_P4Data <- function(data){
       weather = spdv6,
       operational_condition = spdv7,
       staff_gauge_ft= spdv8) %>%
-    # Do we need to modify other datetime fields?
-    separate(eventdate, into = c('event_date', 'event_time'), sep='T') %>% # this is the only trustworthy datetime, filled and standardized by P4
+
+
+    # Do we need to modify other datetime fields?  This is acting strange currently (2/8/22)
+    # separate(eventdate, into = c('event_date', 'event_time'), sep='T') %>% # this is the only trustworthy datetime, filled and standardized by P4
+    separate(eventdate, into = c('event_date', 'event_time', 'gmt_offset'), sep = ' ') %>%
+    mutate(event_time = gsub('.0000000', '', event_time)) %>%
+
+
     # Fixing datatypes
     mutate(event_date = lubridate::ymd(event_date),
            across(.cols = c(trap_start_datetime, trap_end_datetime), lubridate::mdy_hm),
@@ -151,7 +157,7 @@ clean_P4Data <- function(data){
 
     # establish emigrant groups? - plot groups?
 
-    select(eventsite, streamname, event_date, event_time, trap_start_datetime, trap_end_datetime,
+    select(eventsite, streamname, event_date, event_time, gmt_offset, trap_start_datetime, trap_end_datetime,
            hours_sampled, operational_condition, sessionnote, origin, srrverbose, speciesrunreartype,
            eventtype, pittag, length, weight, condition_factor, lifestage, nfish, broodyear,
            conditionalcomments, textcomments, tagger, pit_tag_issued, efficiency_mark,
