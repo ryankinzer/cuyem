@@ -10,8 +10,8 @@
 #' @export
 #'
 #' @examples
-#' get_NOSAests()
-get_NOSAests <- function(redd_data, carcass_data, mr_ests, split_age = FALSE){
+#' sum_NOSAests()
+sum_NOSAests <- function(redd_data, carcass_data, mr_ests, split_age = FALSE){
 
   r_df <- redd_data %>% filter(ReportingGroup != 'Meadow Creek') %>%
     mutate(r_EffDt = lubridate::ymd_hms(EffDt),

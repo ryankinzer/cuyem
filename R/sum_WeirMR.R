@@ -12,8 +12,8 @@
 #' @export
 #' @import dplyr
 #' @examples
-#' get_MRdata(weir_data)
-get_MRests <- function(weir_data, carcass_data = NULL, species = c('Chinook', 'Steelhead'), alpha = 0.05, ...){
+#' get_WeirMR(weir_data)
+sum_WeirMR <- function(weir_data, carcass_data = NULL, species = c('Chinook', 'Steelhead'), alpha = 0.05, ...){
   spp <- match.arg(species)
   w_df <- weir_data
   c_df <- carcass_data

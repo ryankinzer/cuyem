@@ -8,8 +8,8 @@
 #' @export
 #' @import dplyr
 #' @examples
-#' get_SGSests(clean_redd, clean_car)
-get_SGSests <- function(redd_data = NULL, carcass_data = NULL, ...){
+#' sum_SGSests(clean_redd, clean_car)
+sum_SGSests <- function(redd_data = NULL, carcass_data = NULL, ...){
 
   {if(is.null(redd_data) || is.null(carcass_data)) stop('must supply both SGS datasets')}
   redd_dat <- redd_data

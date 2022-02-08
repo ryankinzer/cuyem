@@ -21,9 +21,9 @@
 #'
 #' @examples
 #' cdmsR::cdmsLogin('your_username', 'your_password')
-#' get_JUVests()
+#' sum_JUVests()
 
-get_JUVests <- function(alpha = c('0.05', '0.10'),
+sum_JUVests <- function(alpha = c('0.05', '0.10'),
                               cdms_host = 'https://npt-cdms.nezperce.org'){
 
   alpha <- as.numeric(match.arg(alpha))

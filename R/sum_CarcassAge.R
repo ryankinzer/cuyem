@@ -17,8 +17,8 @@
 #' car_dat <- getDatasetView(datastoreID = 79)
 #' car_dat <- clean_carcassData(car_dat)
 #' age_dat <- getDatasetView(datastoreID = 80)
-#' get_carcassAge(car_dat, age_dat)
-get_carcassAge <- function(carcass_data, age_data = NULL, rmis_codes = NULL, pit_codes = NULL, vie_marks = NULL){
+#' sum_carcassAge(car_dat, age_dat)
+sum_carcassAge <- function(carcass_data, age_data = NULL, rmis_codes = NULL, pit_codes = NULL, vie_marks = NULL){
 
   {if(is.null(carcass_data))stop("carcass data must be supplied")}
 
