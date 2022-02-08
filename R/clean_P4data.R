@@ -1,12 +1,18 @@
-#' @title Clean P4 Data
+#' @title clean_P4Data:
+#'
 #' @description Processes raw P4 data and adds important fields for summaries
-#' @param data raw CDMS RST dataset from get_RSTdata()
+#'
+#' @param data raw CDMS P4 data from get_P4data()
+#'
 #' @export
+#'
 #' @import dplyr
+#'
 #' @author Tyler T. Stright
+#'
 #' @examples
-#' p4_raw <- get_RSTdata()
-#' p4_clean <- clean_RSTdata(p4_raw)
+#' p4_raw <- get_P4Data()
+#' p4_clean <- clean_P4Data(p4_raw)
 
 clean_P4Data <- function(data){
   {if(is.null(data))stop("P4 data must be supplied")}
