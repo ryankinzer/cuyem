@@ -31,7 +31,7 @@
 #'
 #' @examples
 #' # A single strata
-#' est1 <- emigrant_abundance(data.frame(C = 76, M = 68, R = 7), alpha = 0.05, iter = 1000, print = TRUE)
+#' est1 <- est_emigrants(data.frame(C = 76, M = 68, R = 7), alpha = 0.05, iter = 1000, print = TRUE)
 #' names(est1)
 #' est1$Strata
 #'
@@ -41,16 +41,16 @@
 #' recap <- c(7, 10, 9, 18, 48, 10)
 #'
 #' dat <- data.frame(C = unM, M = M, R = recap)
-#' est_strata <- emigrant_abundance(data = dat, alpha = .05,iter = 1000, print=TRUE)
+#' est_strata <- est_emigrants(data = dat, alpha = .05,iter = 1000, print=TRUE)
 #' est_strata$Strata
 #'
-#' est_csv <- emigrant_abundance(data = "example.csv", alpha = .05,iter = 1000, print=TRUE)
+#' est_csv <- est_emigrants(data = "example.csv", alpha = .05,iter = 1000, print=TRUE)
 #'
 #' @return A list of point and uncertainty estimates by each strata.
 #'
 #' @export
 
-emigrant_abundance <- function(data, alpha = 0.05, iter = 1000, print = TRUE, save_file = FALSE, file_name = NULL){
+est_emigrants <- function(data, alpha = 0.05, iter = 1000, print = TRUE, save_file = FALSE, file_name = NULL){
 
   if(is.character(data) == TRUE){
     input <- read.csv(file = data, header = TRUE, sep =',')
