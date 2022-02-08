@@ -4,15 +4,14 @@
 #'   estimates from M-R data collected at rotary screw traps (RST).
 #'   The function operates similar to a Gauss based program developed by
 #'   Steinhorst et al. (2004). Point estimates are derived using the Bailey
-#'   estimator and uncertainty is obtained by bootstrapping unMed capatures
-#'   and Med Rs.
+#'   estimator and uncertainty is obtained by bootstrapping unmarked captures
+#'   and marked recaptures.
 #'
 #' @section Warning: Standard error and confidence intervals will not match GAUSS estimates
 #'   perfectly because of bootstrapped sample distribution.
 #'
-#' @param data An R dataframe or "example.csv" file containing at least three fields of data; the
-#'   count of unMed Cs (\code{C}), Med fish (\code{M}) released
-#'   upstream to conduct trap efficiency trials, and Rd (\code{R}) trap
+#' @param data An R dataframe or "example.csv" file containing at least three fields of data; the count of unmarked (\code{C}), marked (\code{M}) fish released
+#'   upstream to conduct trap efficiency trials, and recaptured (\code{R}) trap
 #'   efficiency fish. Field names are required to be; C, M, R.  All other fields are ignored.
 #'
 #' @param alpha Type I error rate.  Default is set at 0.05 to produce 95\%

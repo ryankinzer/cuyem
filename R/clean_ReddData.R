@@ -13,7 +13,7 @@ clean_reddData <- function(data){
     redd_dat <- data %>%
       mutate(TransectName = str_split(LocationLabel, 'Transect - ', simplify = TRUE)[,2]) %>%
       left_join(transect_meta, by = c('Species', 'Run', 'StreamName', 'TransectName')) %>%
-      mutate(SurveyDate = lubridate::date(lubridate::ymd_hms(SurveyDate)),
+      mutate(#SurveyDate = lubridate::date(lubridate::ymd_hms(SurveyDate)),
              SurveyYear = lubridate::year(SurveyDate)) %>%
       select(ESU_DPS:Run, ReportingGroup, StreamName, TribToName, LocationLabel, TransectName, SurveyYear, everything())
 

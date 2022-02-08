@@ -1,6 +1,8 @@
 
 #' @title Sum Redd Counts
 #'
+#' @description Summarize CDMS redd count data.
+#'
 #' @param redd_data cleaned redd data
 #' @param ... grouping variables
 #'
@@ -20,9 +22,10 @@ sum_Redds <- function(.redd_data, ...){
 
   # get redd nums
   dat <- redd_dat %>%
-    distinct(ActivityId, .keep_all = TRUE) %>%
+    filter(WPTType == 'New Redd') %>%
+    #distinct(ActivityId, .keep_all = TRUE) %>%
     group_by(...) %>%
-    summarise(Redds = sum(NewRedds, na.rm = FALSE))
+    summarise(Redds = sum(Count, na.rm = FALSE))
 
   return(dat)
 }
