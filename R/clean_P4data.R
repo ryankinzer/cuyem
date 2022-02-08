@@ -5,9 +5,10 @@
 #' @import dplyr
 #' @author Tyler T. Stright
 #' @examples
-#' rst_raw <- get_RSTdata()
-#' rst_clean <- clean_RSTdata(rst_raw)
-clean_P4data <- function(data){
+#' p4_raw <- get_RSTdata()
+#' p4_clean <- clean_RSTdata(p4_raw)
+
+clean_P4Data <- function(data){
   {if(is.null(data))stop("P4 data must be supplied")}
 
   # snake-ize field names
