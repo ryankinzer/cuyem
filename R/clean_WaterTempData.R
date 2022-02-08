@@ -5,7 +5,7 @@
 #' @import dplyr
 #' @author Tyler T. Stright
 #' @examples
-#' wt_raw <- cdmsR::getWaterTempData()
+#' wt_raw <- cdmsR::get_WaterTempData()
 #' wt_clean <- clean_WaterTempData(wt_raw)
 clean_WaterTempData <- function(data){
   {if(is.null(data))stop("Water temperature data must be supplied")}

@@ -2,7 +2,7 @@
 #'
 #' @description summarizes cleaned water temperature data
 #'
-#' @param data CDMS water temperature data from get_WaterTemps() %>% clean_WaterTemps()
+#' @param data CDMS water temperature data from get_WaterTempData() %>% clean_WaterTempData()
 #'
 #' @return dataframe containing summarized water temperature metrics
 #'
@@ -11,9 +11,9 @@
 #' @import dplyr
 #'
 #' @examples
-#' wt_raw <- getWaterTemps(date_begin = '2009-07-01', date_end = '2009-11-30', locationID = 1605)
-#' wt_clean <- clean_WaterTemps(wt_raw)
-#' wt_sum <- sum_WaterTemps(wt_clean)
+#' wt_raw <- get_WaterTempData(date_begin = '2009-07-01', date_end = '2009-11-30', locationID = 1605)
+#' wt_clean <- clean_WaterTempData(wt_raw)
+#' wt_sum <- sum_WaterTempData(wt_clean)
 
 sum_WaterTempData <- function(data){
 
