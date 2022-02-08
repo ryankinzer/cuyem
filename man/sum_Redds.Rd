@@ -15,7 +15,7 @@ sum_Redds(.redd_data, ...)
 
 }
 \description{
-Sum Redd Counts
+Summarize CDMS redd count data.
 }
 \examples{
 redd_df <- cdmsR::getDatasetView(datastoreID = 78)
