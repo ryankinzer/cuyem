@@ -1,8 +1,8 @@
-#' @title Summarize Water Temperature Data
+#' @title sum_WaterTempData:
 #'
 #' @description summarizes cleaned water temperature data
 #'
-#' @param data CDMS water temperature data from get_WaterTemps() %>% clean_WaterTemps()
+#' @param data CDMS water temperature data from get_WaterTempData() %>% clean_WaterTempData()
 #'
 #' @return dataframe containing summarized water temperature metrics
 #'
@@ -11,19 +11,16 @@
 #' @import dplyr
 #'
 #' @examples
-#' wt_raw <- getWaterTemps(date_begin = '2009-07-01', date_end = '2009-11-30', locationID = 1605)
-#' wt_clean <- clean_WaterTemps(wt_raw)
-#' wt_sum <- sum_WaterTemps(wt_clean)
+#' wt_raw <- get_WaterTempData(date_begin = '2009-07-01', date_end = '2009-11-30', locationID = 1605)
+#' wt_clean <- clean_WaterTempData(wt_raw)
+#' wt_sum <- sum_WaterTempData(wt_clean)
 
-sum_WaterTemps <- function(data){
+sum_WaterTempData <- function(data){
 
   if(is.null(data)){stop("A data frame containing prepared water temperature data must be provided.")}
 
-  # Testing
-  data <- wt_clean
-
   # daily average by date/location/instrument name
-  daily_df <- data %>%
+  sum_df <- data %>%
     arrange(readingdatetime) %>%
     group_by(locationlabel, reading_date, instrument_name) %>% # should this be instrumentid and locationid?
     summarize(daily_mean = mean(watertemperature),

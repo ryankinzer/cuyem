@@ -1,18 +1,14 @@
-#' @title Clean Water Temperature Data
-#' @description Processes the raw CDMS water temperature dataset
-#' @param data raw CDMS water temperature dataset from \code{cdmsR::getWaterTemps(start_date = 'mm-dd-yyyy', end_date = 'mm-dd-yyyy')}
+#' @title clean_WaterTempData:
+#' @description Cleans raw CDMS water temperature data
+#' @param data raw CDMS water temperature dataset from \code{cdmsR::get_WaterTempData(start_date = 'mm-dd-yyyy', end_date = 'mm-dd-yyyy')}
 #' @export
 #' @import dplyr
 #' @author Tyler T. Stright
 #' @examples
-#' wt_dat <- cdmsR::getWaterTemps(datastore = ????)
-#' clean_harvestData(harvest_dat)
-clean_WaterTemps <- function(data){
-  {if(is.null(data))stop("Water temperature data must be supplied")}  # I Think this is CREEL
-
-  # testing
-  load(file = './data/wt_raw.rda')
-  data <- wt_raw
+#' wt_raw <- cdmsR::get_WaterTempData()
+#' wt_clean <- clean_WaterTempData(wt_raw)
+clean_WaterTempData <- function(data){
+  {if(is.null(data))stop("Water temperature data must be supplied")}
 
   # clean field names
   names(data) <- gsub(' ', '_', tolower(names(data)))
