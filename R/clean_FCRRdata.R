@@ -6,8 +6,8 @@
 #' @author Tyler T. Stright
 #' @examples
 #' fcrr_dat <- getDatasetView(datastore = 100)
-#' fcrr_clean <- clean_FCRRdata(fcrr_dat)
-clean_FCRRdata <- function(data){
+#' fcrr_clean <- clean_FCRRData(fcrr_dat)
+clean_FCRRData <- function(data){
   {if(is.null(data))stop("FCRR data must be supplied")}
 
   # remove 02_FCRR_standardize.R when this is complete.
