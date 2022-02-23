@@ -2,7 +2,7 @@
 #'
 #' @description Summarize P4 lamprey catch for BPA deliverable.
 #'
-#' @param data cleaned P4 data queried for Pacific Lamprey and a single CalendarYear
+#' @param data cleaned P4 data queried for a single calendar year.
 #'
 #' @author Tyler T. Stright
 #'
@@ -31,6 +31,7 @@ sum_Lamprey <- function(data) {
 
   # summarize daily by site & lifestage
   data_spread <- data %>%
+    filter(speciesrunreartype == 'A0W') %>%
     mutate(genetics_taken = if_else(is.na(geneticid), 'no', 'yes'),
            lifestage = if_else(is.na(lifestage), 'Unknown', lifestage)) %>%
     group_by(eventsite, event_date, speciesrunreartype, lifestage, genetics_taken) %>%
