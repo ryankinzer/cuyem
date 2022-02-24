@@ -19,8 +19,10 @@ sum_RSTstrata <- function(data,
                           species = c('Chinook', 'Steelhead'),
                           strata_dates = NULL) {
 
-  # must have data
+  # throw errors
   {if(is.null(data))stop("RST data must be supplied")}
+  {if(is.null(season))stop("Desired season must be specified.")}
+  {if(is.null(species))stop("Desired species must be specified.")}
 
   # establish months
   if(season == 'Spring') {season_months <- 1:6}
