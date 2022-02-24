@@ -1,19 +1,24 @@
-#' @title Plotting function to help visualize strata for RST trap efficiencies
+#' @title gg_strata:
+#'
 #' @description Function inside 'sum_RSTstrata()', Takes summarized RST data, both
 #' daily and by strata, and plots captures/marks/recaptures to help assess
-#' accuracy of strata.
+#' accuracy of strata. Not intended for use outside of sum_RSTstrata().
+#'
 #' @param daily_df Summarized P4 RST data with daily C/M/R tallies and strata.
-#' @param strata_df Daily data further summarized by strata.
-#' @param strata_dates Vector of dates (YYYY-MM-DD)input by user to establish
-#' strata.  If NULL, function will automatically apply one-week strata.
+#' Produced by sum_RSTstrata().
+#'
+#' @param strata_df Daily data further summarized by strata. Produced by sum_RSTstrata().
+#'
+#' @param strata_dates Vector of dates (YYYY-MM-DD) input by user to establish
+#' strata.  If NULL, function will automatically apply 7-day strata.
+#'
 #' @import dplyr
+#'
 #' @author Tyler T. Stright
+#'
 #' @examples
-#' p4_raw <- get_P4Data(EventSite = 'IMNTRP', MigrationYear = 2020)
-#' p4_clean <- clean_P4Data(p4_raw)
-#' strata <- sum_RSTstrata(p4_clean, 'Spring', NULL)
 
-gg_strata <- function(daily_df, strata_df) {
+gg_strata <- function(daily_df, strata_df, species = c('Chinook', 'Steelhead')) {
 
   # determine staff gauge used (RSTs should only use one)
   if(length(unique(daily_df$staff_gauge_cm)) > 1) {
@@ -25,13 +30,10 @@ gg_strata <- function(daily_df, strata_df) {
 
   # placements, colors, and other plot helpers
   scaleFactor <- round(max(daily_df[ ,'trap_rpm'], na.rm=TRUE)/max(daily_df[ ,paste(gauge_used)], na.rm=TRUE), 5)
-  y_strata <- max(daily_df[ ,paste(gauge_used)])*1.28
-  y_c <- max(daily_df[ ,paste(gauge_used)])*1.23
-  y_m <- max(daily_df[ ,paste(gauge_used)])*1.19
-  y_r <- max(daily_df[ ,paste(gauge_used)])*1.15
-  y_c2 <- max(daily_df[ ,paste(gauge_used)])*1.09
-  y_m2 <- max(daily_df[ ,paste(gauge_used)])*1.05
-  y_r2 <- max(daily_df[ ,paste(gauge_used)])*1.01
+  y_strata <- max(daily_df[ ,paste(gauge_used)], na.rm = TRUE)*1.13
+  y_c <- max(daily_df[ ,paste(gauge_used)], na.rm = TRUE)*1.09
+  y_m <- max(daily_df[ ,paste(gauge_used)], na.rm = TRUE)*1.05
+  y_r <- max(daily_df[ ,paste(gauge_used)], na.rm = TRUE)*1.01
 
   annotate_dodge <- 1.015
   color_c <- 'darkgreen'
@@ -52,25 +54,16 @@ gg_strata <- function(daily_df, strata_df) {
     # strata lines and labels
     geom_vline(xintercept = strata_df$strata_start, linetype = 'dotted') +
     geom_text(data = strata_df, aes(x = strata_labeldate, y = y_strata, label = strata_n)) +
-    # CMR labels - 12W / Strata
+    # Strata & CMR text
     annotate(geom = 'text',
-             label = c('Strata', '12W: C', '12W: M', '12W: R'),
-             x = rep(min(daily_df$event_date), 4),
-             y = c(y_strata*annotate_dodge, y_c*annotate_dodge, y_m*annotate_dodge, y_r*annotate_dodge),
+             label = c('S', 'C', 'M', 'R'),
+             x = rep(min(daily_df$event_date-days(3)), 4),
+             y = c(y_strata, y_c, y_m, y_r),
              color = c('black', color_c, color_m, color_r)) +
-    geom_text(data = strata_df, aes(x = strata_labeldate, y = y_c, label = C_12W), color = color_c) +
-    geom_text(data = strata_df, aes(x = strata_labeldate, y = y_m, label = M_12W), color = color_m) +
-    geom_text(data = strata_df, aes(x = strata_labeldate, y = y_r, label = R_12W), color = color_r) +
-    # CMR labels - 32W
-    annotate(geom = 'text',
-             label = c('32W: C', '32W: M', '32W: R'),
-             x = rep(min(daily_df$event_date), 3),
-             y = c(y_c2*annotate_dodge, y_m2*annotate_dodge, y_r2*annotate_dodge),
-             color = c(color_c, color_m, color_r)) +
-    geom_text(data = strata_df, aes(x = strata_labeldate, y = y_c2, label = C_32W), color = color_c) +
-    geom_text(data = strata_df, aes(x = strata_labeldate, y = y_m2, label = M_32W), color = color_m) +
-    geom_text(data = strata_df, aes(x = strata_labeldate, y = y_r2, label = R_32W), color = color_r) +
-    # geom_text(mapping = aes(x = rep(ymd('2021-01-01'), 3), y = c(y_c, y_m, y_r), label = c('Captures', 'Marks', 'Recaptues'))) +
+    geom_text(data = strata_df, aes(x = strata_labeldate, y = y_c, label = C), color = color_c) +
+    geom_text(data = strata_df, aes(x = strata_labeldate, y = y_m, label = M), color = color_m) +
+    geom_text(data = strata_df, aes(x = strata_labeldate, y = y_r, label = R), color = color_r) +
+    # theme
     theme_bw() +
     theme(
       axis.title.y.left=element_text(color="blue", size = 13, family = 'serif'),
@@ -79,5 +72,6 @@ gg_strata <- function(daily_df, strata_df) {
       axis.text.y.right=element_text(color="black", size = 11, family = 'serif'),
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank()
-    )
+    ) +
+    ggtitle(label = paste0(species, ' Strata Visualization'))
 }
