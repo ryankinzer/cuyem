@@ -12,25 +12,40 @@
 #' @examples
 #' p4_raw <- get_P4Data(EventSite = 'IMNTRP', MigrationYear = 2020)
 #' p4_clean <- clean_P4Data(p4_raw)
-#' strata <- sum_RSTstrata(p4_clean, 'Spring', NULL)
+#' strata <- sum_RSTstrata(p4_clean, 'Spring', 'Chinook', NULL)
 
-sum_RSTstrata <- function(data, season, strata_dates = NULL) {
+sum_RSTstrata <- function(data,
+                          season = c('Spring', 'Summer', 'Fall'),
+                          species = c('Chinook', 'Steelhead'),
+                          strata_dates = NULL) {
 
-  # plotting function
-  # source('./R/gg_strata.R')
-
-  # must have data
+  # throw errors
   {if(is.null(data))stop("RST data must be supplied")}
+  {if(is.null(season))stop("Desired season must be specified.")}
+  {if(is.null(species))stop("Desired species must be specified.")}
 
   # establish months
   if(season == 'Spring') {season_months <- 1:6}
   if(season == 'Summer') {season_months <- 7:8}
   if(season == 'Fall') {season_months <- 9:12}
 
-  # Get M/C/R for RST ----
-  mcr_prep <- data %>%
+  # # establish species codes
+  if(species == 'Chinook') {.species=c('11W', '12W')}
+  if(species == 'Steelhead') {.species=c('32W')}
+
+  # apply filters
+  mcr_filtered <- data %>%
     filter(month(event_date) %in% season_months) %>%
-    filter(speciesrunreartype %in% c('11W', '12W', '32W')) %>%
+    filter(speciesrunreartype %in% .species)
+
+  # generate dates for complete()
+  date_range <- tibble(
+    event_date = seq(lubridate::ymd(min(mcr_filtered$event_date, na.rm=TRUE)),
+                     lubridate::ymd(max(mcr_filtered$event_date, na.rm=TRUE)), by="day"))
+
+  # Get M/C/R for RST ----
+  mcr_prep <- mcr_filtered %>%
+    complete(event_date = date_range$event_date) %>%
     arrange(event_date) %>%
     group_by(event_date, trap_rpm, staff_gauge_cm, staff_gauge_ft, speciesrunreartype) %>%
     summarize(
@@ -59,12 +74,9 @@ sum_RSTstrata <- function(data, season, strata_dates = NULL) {
   mcr_strata <- mcr_daily %>%
     group_by(strata_start, strata_n) %>%
     summarize(
-      C_12W = sum(C[speciesrunreartype %in% c('11W', '12W')], na.rm = T),
-      M_12W = sum(M[speciesrunreartype %in% c('11W', '12W')], na.rm = T),
-      R_12W = sum(R[speciesrunreartype %in% c('11W', '12W')], na.rm = T),
-      C_32W = sum(C[speciesrunreartype == '32W'], na.rm = T),
-      M_32W = sum(M[speciesrunreartype == '32W'], na.rm = T),
-      R_32W = sum(R[speciesrunreartype == '32W'], na.rm = T)
+      C = sum(C, na.rm = T),
+      M = sum(M, na.rm = T),
+      R = sum(R, na.rm = T)
     ) %>%
     ungroup() %>%
     mutate(
@@ -78,17 +90,17 @@ sum_RSTstrata <- function(data, season, strata_dates = NULL) {
 
   strata_vector <- unique(mcr_strata$strata_start)
 
-  strata_plot <- gg_strata(mcr_daily, mcr_strata)
+  strata_plot <- gg_strata(mcr_daily, mcr_strata, species)
 
   # generate return for gauss estimates.
   gauss_return <- mcr_strata %>%
     arrange(strata_n) %>%
-    select(C=C_12W, M=M_12W, R=R_12W)
+    select(C, M, R)
 
-  cat('This functions returns a list of objects:',
+  cat('This function returns a list of objects:',
       '[[1]]: strata visualization' ,
       '[[2]]: strata dates vector',
-      '[[3]]: dataframe for gauss estimates (12W)', sep='\n')
+      '[[3]]: dataframe for gauss estimates', sep='\n')
 
   return(list(strata_plot, strata_vector, gauss_return))
 }
