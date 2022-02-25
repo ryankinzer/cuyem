@@ -33,7 +33,7 @@ sum_JUVests <- function(alpha = c('0.05', '0.10'),
          call. = FALSE)
   }
 
-  if("try-error" %in% class(try(cdmsR::getDatastores(cdms_host = cdms_host)))){
+  if("try-error" %in% class(try(cdmsR::get_Datastores(cdms_host = cdms_host)))){
     stop('A CDMS login is required for this function to work. Please use \"cdmsLogin\" with your username and password first.', call. = FALSE)
   }
 

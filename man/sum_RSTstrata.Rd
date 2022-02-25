@@ -4,7 +4,12 @@
 \alias{sum_RSTstrata}
 \title{sum_RSTstrata:}
 \usage{
-sum_RSTstrata(data, season, strata_dates = NULL)
+sum_RSTstrata(
+  data,
+  season = c("Spring", "Summer", "Fall"),
+  species = c("Chinook", "Steelhead"),
+  strata_dates = NULL
+)
 }
 \arguments{
 \item{data}{Prepared P4 RST data from get_RSTData() %>% clean_RSTData() and filtered for a single RST.}
@@ -22,7 +27,7 @@ dataframe to be fed to gauss estimates.
 \examples{
 p4_raw <- get_P4Data(EventSite = 'IMNTRP', MigrationYear = 2020)
 p4_clean <- clean_P4Data(p4_raw)
-strata <- sum_RSTstrata(p4_clean, 'Spring', NULL)
+strata <- sum_RSTstrata(p4_clean, 'Spring', 'Chinook', NULL)
 }
 \author{
 Tyler T. Stright

@@ -2,27 +2,23 @@
 % Please edit documentation in R/gg_strata.R
 \name{gg_strata}
 \alias{gg_strata}
-\title{Plotting function to help visualize strata for RST trap efficiencies}
+\title{gg_strata:}
 \usage{
-gg_strata(daily_df, strata_df)
+gg_strata(daily_df, strata_df, species = c("Chinook", "Steelhead"))
 }
 \arguments{
-\item{daily_df}{Summarized P4 RST data with daily C/M/R tallies and strata.}
+\item{daily_df}{Summarized P4 RST data with daily C/M/R tallies and strata.
+Produced by sum_RSTstrata().}
 
-\item{strata_df}{Daily data further summarized by strata.}
+\item{strata_df}{Daily data further summarized by strata. Produced by sum_RSTstrata().}
 
-\item{strata_dates}{Vector of dates (YYYY-MM-DD)input by user to establish
-strata.  If NULL, function will automatically apply one-week strata.}
+\item{strata_dates}{Vector of dates (YYYY-MM-DD) input by user to establish
+strata.  If NULL, function will automatically apply 7-day strata.}
 }
 \description{
 Function inside 'sum_RSTstrata()', Takes summarized RST data, both
 daily and by strata, and plots captures/marks/recaptures to help assess
-accuracy of strata.
-}
-\examples{
-p4_raw <- get_P4Data(EventSite = 'IMNTRP', MigrationYear = 2020)
-p4_clean <- clean_P4Data(p4_raw)
-strata <- sum_RSTstrata(p4_clean, 'Spring', NULL)
+accuracy of strata. Not intended for use outside of sum_RSTstrata().
 }
 \author{
 Tyler T. Stright

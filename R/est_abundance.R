@@ -61,10 +61,10 @@ est_abundance <- function(n1, n2, m2, method = c('adjusted Peterson'), CItype = 
   }
 
   if(CItype == 'hypergeometric'){
-    l_r <- qhyper(alpha/2, m = n1, n = N - n1, k = n2)
+    l_r <- qhyper(1-alpha/2, m = n1, n = N - n1, k = n2)
     l_eff <- l_r/n2
 
-    u_r <- qhyper(1-alpha/2, m = n1, n = N - n1, k = n2)
+    u_r <- qhyper(alpha/2, m = n1, n = N - n1, k = n2)
     u_eff <- u_r/n2
 
     l = n1/l_eff

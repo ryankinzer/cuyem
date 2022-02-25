@@ -6,7 +6,7 @@
 #'
 #' @author Tyler T. Stright
 #'
-#' @import dplyr, lubridate
+#' @import dplyr lubridate
 #'
 #' @return
 #'
