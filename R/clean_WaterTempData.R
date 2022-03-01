@@ -24,6 +24,13 @@ clean_WaterTempData <- function(data){
     # remove system fields
     select(-ends_with('effdt'))
 
+  date_range <- tibble(
+    reading_date = seq(lubridate::ymd(min(clean_df$reading_date, na.rm=TRUE)),
+                     lubridate::ymd(max(clean_df$reading_date, na.rm=TRUE)), by="day"))
 
-  return(clean_df)
+  complete_df <- clean_df %>%
+    complete(reading_date = date_range$reading_date, nesting(locationlabel))
+
+
+  return(complete_df)
 }
