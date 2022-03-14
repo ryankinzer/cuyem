@@ -48,10 +48,10 @@ qa_P4Data <- function(data){
     geom_point()
 
   # Validation
-  # Check Operational_Condition - this isn't 100% trustworthy yet. protocol decisions first..
+  # Check Operational_Condition
   operational_condition_check <- data %>%
     distinct(name, .keep_all=TRUE) %>%
-    filter(!operational_condition %in% c('“S1 – Complete overnight sample (<=24 hours)|S12 – Sampled more than 24 hours|S9 – Sub-sampled|S3 – No or incomplete sample due to environmental conditions|S5 – No or incomplete sample due to equipment failure, staffing, etc.”')) %>%
+    filter(!operational_condition %in% c('S1 – Complete overnight sample (<=24 hours)|S12 – Sampled more than 24 hours|S9 – Sub-sampled|S3 – No or incomplete sample due to environmental conditions|S5 – No or incomplete sample due to equipment failure, staffing, etc.')) %>%
     mutate(operational_condition_check = paste('Error:', operational_condition)) %>%
     select(name, ends_with('check'))
 
