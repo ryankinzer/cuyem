@@ -90,7 +90,7 @@ qa_P4Data <- function(data){
   # Check Mortalities
   mort_check <- data %>%
     select(name, conditional_comments, text_comments) %>%
-    filter(grepl('(?<![[:alpha:]])M\\b', conditional_comments, perl = TRUE) &
+    filter(grepl('\\bM\\b', conditional_comments, perl = TRUE) &
              !grepl('\\bTR\\b|\\bPR\\b|\\bHND\\b|\\bDOA\\b|\\bTG\\b', text_comments)) %>%
     mutate(mort_check = 'Error: Check mortality source') %>%
     select(name, ends_with('check'))
@@ -106,7 +106,7 @@ qa_P4Data <- function(data){
   lamprey_check <- data %>%
     select(name, species_run_rear_type, conditional_comments) %>%
     filter(species_run_rear_type == 'A0W' & !grepl('\\bAM\\b|\\bMP\\b|\\bAL\\b', conditional_comments)) %>%
-    mutate(lamprey_check = 'Error: Missing Lifestage') %>%
+    mutate(lamprey_check = 'Error: Lamprey Missing Lifestage') %>%
     select(name, ends_with('check'))
 
   # Validation Join
