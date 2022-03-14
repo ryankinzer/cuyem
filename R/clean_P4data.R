@@ -17,8 +17,12 @@
 clean_P4Data <- function(data){
   {if(is.null(data))stop("P4 data must be supplied")}
 
-  # snake-ize field names
-  names(data) <- gsub(' ','_',tolower(names(data)))
+  # snake_case field names
+  x <- names(data)
+  x1 <- str_replace_all(x, '([a-z])([A-Z])([a-z])', '\\1_\\2\\3')
+  x2 <- str_replace_all(x1, '([a-z])([A-Z])([A-Z])', '\\1_\\2\\3')
+  x3 <- str_replace_all(x2, '([A-Z])([A-Z])([a-z])', '\\1_\\2\\3')
+  names(data) <- tolower(x3)
 
   # rename, fix datatypes ----
   data_clean <- data %>%
@@ -35,8 +39,8 @@ clean_P4Data <- function(data){
 
 
     # Do we need to modify other datetime fields?  This is acting strange currently (2/8/22)
-    # separate(eventdate, into = c('event_date', 'event_time'), sep='T') %>% # this is the only trustworthy datetime, filled and standardized by P4
-    separate(eventdate, into = c('event_date', 'event_time', 'gmt_offset'), sep = ' ') %>%
+    # separate(event_date, into = c('event_date', 'event_time'), sep='T') %>% # this is the only trustworthy datetime, filled and standardized by P4
+    separate(event_date, into = c('event_date', 'event_time', 'gmt_offset'), sep = ' ') %>%
     mutate(event_time = gsub('.0000000', '', event_time)) %>%
 
 
@@ -46,115 +50,124 @@ clean_P4Data <- function(data){
            across(.cols = c(trap_rpm, staff_gauge_ft), as.double),
            across(.cols = c(nfish, staff_gauge_cm), as.integer)) %>%
     mutate(
-      pit_tag_issued = if_else(pittag == '..........', 0, 1),
+      pit_tag_issued = if_else(pit_tag == '..........', FALSE, TRUE),
+      mark_recap = case_when(
+        # get marks
+        event_type == 'Mark' & grepl('\\bTU\\b', text_comments, ignore.case = T) ~ 'mark',
+        event_type %in% c('Mark', 'Tally') & grepl('\\bCL\\b|\\bCU\\b', conditional_comments, ignore.case = T) ~ 'mark',
+        # get recaps
+        event_type %in% c('Recapture', 'Recovery') & grepl('\\bRE\\b', conditional_comments) & grepl('\\bRC\\b', text_comments) ~ 'recap',
+        event_type %in% c('Recapture', 'Recovery') & grepl('\\bRE\\b', conditional_comments) & grepl('\\bCL\\b|\\bCU\\b', conditional_comments) ~ 'recap',
+        # get unmarks
+        !grepl('RE', conditional_comments) ~ 'unmark',
+      TRUE ~ 'not used'
+        ),
       efficiency_mark = case_when(  # Bismark Brown? BBY? ********************
         # Tagged sent upstream
-        grepl('[ ]{0,1}TU[ ]{0,1}', textcomments, ignore.case = T) ~ 1,
+        event_type == 'Mark' & grepl('\\bTU\\b', text_comments, ignore.case = T) ~ TRUE,
         # Caudal Lower/Upper sent upstream
-        grepl('[ ]{0,1}CL[ ]{0,1}|[ ]{0,1}CU[ ]{0,1}', conditionalcomments, ignore.case = T) ~ 1,
-        TRUE ~ 0),
-      efficiency_recap = if_else(
-        grepl('Recapture', eventtype) &  # this avoids including Mortality RE/RC
-          grepl('[ ]{0,1}RE[ ]{0,1}', conditionalcomments) &
-          grepl('[ ]{0,1}RC[ ]{0,1}', textcomments), 1, 0),
-      mortality =
-        if_else(grepl('[ ]{0,1}M[ ]{0,1}', conditionalcomments) &
-                  grepl('[ ]{0,1}TRP[ ]{0,1}|[ ]{0,1}PRD[ ]{0,1}|[ ]{0,1}HND[ ]{0,1}|[ ]{0,1}DOA[ ]{0,1}|[ ]{0,1}TG[ ]{0,1}', textcomments), 1, 0),
+        event_type %in% c('Mark', 'Tally') & grepl('\\bCL\\b|\\bCU\\b', conditional_comments, ignore.case = T) ~ TRUE,
+        TRUE ~ FALSE),
+      efficiency_recap = case_when(
+        event_type %in% c('Recapture', 'Recovery') & grepl('\\bRE\\b', conditional_comments) & grepl('\\bRC\\b', text_comments) ~ TRUE,
+        event_type %in% c('Recapture', 'Recovery') & grepl('\\bRE\\b', conditional_comments) & grepl('\\bCL\\b|\\bCU\\b', conditional_comments) ~ TRUE,
+        TRUE ~ FALSE),
+      mortality = if_else(grepl('\\bM\\b', conditional_comments), TRUE, FALSE),
       origin = case_when(
-        grepl('Hat.', srrverbose)  ~ 'Hatchery',
-        grepl('Wild', srrverbose) ~ 'Natural',
+        grepl('Hat.', srr_verbose)  ~ 'Hatchery',
+        grepl('Wild', srr_verbose) ~ 'Natural',
         TRUE ~ NA_character_
       ),
-      lifestage = case_when(
+      life_stage = case_when(
         # Pacific Lamprey
-        srrverbose == 'Pacific Lamprey' & grepl('[ ]{0,1}AM[ ]{0,1}', conditionalcomments) ~ 'Ammocoete',
-        srrverbose == 'Pacific Lamprey' & grepl('[ ]{0,1}MP[ ]{0,1}', conditionalcomments) ~ 'Macropthalmia',
-        srrverbose == 'Pacific Lamprey' & grepl('[ ]{0,1}AL[ ]{0,1}', conditionalcomments) ~ 'Adult',
+        srr_verbose == 'Pacific Lamprey' & grepl('\\bAM\\b', conditional_comments) ~ 'Ammocoete',
+        srr_verbose == 'Pacific Lamprey' & grepl('\\bMP\\b', conditional_comments) ~ 'Macropthalmia',
+        srr_verbose == 'Pacific Lamprey' & grepl('\\bAL\\b', conditional_comments) ~ 'Adult',
         # All Hatchery
         origin == 'Hatchery' ~ NA_character_, # probably shouldn't just assume 'Smolt'
         # Steelhead - may need to update this.
-        grepl('Steelhead', srrverbose) & lubridate::month(event_date) %in% c(1:6) ~ 'Winter/Spring',
-        grepl('Steelhead', srrverbose) & lubridate::month(event_date) %in% c(7:12) ~ 'Summer/Fall',
+        grepl('Steelhead', srr_verbose) & lubridate::month(event_date) %in% c(1:6) ~ 'Winter/Spring',
+        grepl('Steelhead', srr_verbose) & lubridate::month(event_date) %in% c(7:12) ~ 'Summer/Fall',
         # Spring/summer Chinook - this doesn't deal with Fall chinook properly.
-        grepl('YOY', textcomments) ~ 'YOY',
+        grepl('YOY', text_comments) ~ 'YOY',
         origin == 'Natural' & lubridate::month(event_date) %in% c(1:6) ~ 'Smolt',
         origin == 'Natural' & lubridate::month(event_date) %in% c(7:9) ~ 'Parr',
         origin == 'Natural' & lubridate::month(event_date) %in% c(10:12) ~ 'Presmolt',
         TRUE ~ NA_character_
       ),
       condition_factor = (weight/length^3)*100000,
-      target = if_else(speciesrunreartype %in% c('11H', '11W', '12H', '12W', '32W', '32H', '25W', '25H', '7RW', 'A0W'), 1, 0), # 1=target, 0=incidental
+      target = if_else(species_run_rear_type %in% c('11H', '11W', '12H', '12W', '32W', '32H', '25W', '25H', '7RW', 'A0W'), TRUE, FALSE), # 1=target, 0=incidental
       scientific_name = case_when(
-        srrverbose %in% c('Unknown', 'Unknown (fish not observed)', 'Other', 'No Fish Day') ~ NA_character_,
-        grepl('Chinook', srrverbose) ~ 'Oncorhynchus tshawytscha',
-        grepl('Steelhead|Rainbow Trout', srrverbose) ~ 'Oncorhynchus mykiss',
-        grepl('Coho', srrverbose) ~ 'Oncorhynchus kisutch',
-        srrverbose == 'American Shad' ~ 'Alosa sapidissima',
-        srrverbose == 'Bridgelip Sucker' ~ 'Catostomus columbianus',
-        srrverbose == 'Brook Trout' ~ 'Salvelinus fontinalis',
-        srrverbose == 'Bull Trout' ~ 'Salvelinus confluentus',
-        srrverbose == 'Bullhead Catfish' ~ 'Ameiurus sp.',  # 3 different in this group?
-        srrverbose == 'Channel Catfish' ~ 'Ictalurus punctatus',
-        srrverbose == 'Chiselmouth' ~ 'Acrocheilus alutaceus',
-        srrverbose == 'Dace species' ~ 'Leuciscus sp.',
-        srrverbose == 'Largescale Sucker' ~ 'Castostomus macrocheilus',
-        srrverbose == 'Longnose Dace' ~ 'Rhinichthys cataractae',
-        srrverbose == 'Mottled Sculpin' ~ 'Cottus bairdii',
-        srrverbose == 'Mountain Whitefish' ~ 'Prosopium williamsoni',
-        srrverbose == 'Northern Pikeminnow' ~ 'Ptychocheilus oregonensis',
-        srrverbose == 'Pacific Lamprey' ~ 'Entosphenus tridentatus',
-        srrverbose == 'Peamouth' ~ 'Mylocheilus caurinus',
-        srrverbose == 'Redside Shiner' ~ 'Richardsonius balteatus',
-        srrverbose == 'Sculpin species' ~ 'Cottus sp.',
-        srrverbose == 'Smallmouth Bass' ~ 'Micropterus dolomieu',
-        srrverbose == 'Speckled Dace' ~ 'Rhinichthys osculus',
-        srrverbose == 'Sucker species' ~ 'Catostomus sp.',
-        srrverbose %in% c('Wild Coastal Cutthroat', 'Wild Resident Cutthroat') ~ 'Oncorhynchus clarkii',
-        srrverbose == 'Wild Sockeye (unknown run)' ~ 'Oncorhynchus nerka',
+        srr_verbose %in% c('Unknown', 'Unknown (fish not observed)', 'Other', 'No Fish Day') ~ NA_character_,
+        grepl('Chinook', srr_verbose) ~ 'Oncorhynchus tshawytscha',
+        grepl('Steelhead|Rainbow Trout', srr_verbose) ~ 'Oncorhynchus mykiss',
+        grepl('Coho', srr_verbose) ~ 'Oncorhynchus kisutch',
+        srr_verbose == 'American Shad' ~ 'Alosa sapidissima',
+        srr_verbose == 'Bridgelip Sucker' ~ 'Catostomus columbianus',
+        srr_verbose == 'Brook Trout' ~ 'Salvelinus fontinalis',
+        srr_verbose == 'Bull Trout' ~ 'Salvelinus confluentus',
+        srr_verbose == 'Bullhead Catfish' ~ 'Ameiurus sp.',  # 3 different in this group?
+        srr_verbose == 'Channel Catfish' ~ 'Ictalurus punctatus',
+        srr_verbose == 'Chiselmouth' ~ 'Acrocheilus alutaceus',
+        srr_verbose == 'Dace species' ~ 'Leuciscus sp.',
+        srr_verbose == 'Largescale Sucker' ~ 'Castostomus macrocheilus',
+        srr_verbose == 'Longnose Dace' ~ 'Rhinichthys cataractae',
+        srr_verbose == 'Mottled Sculpin' ~ 'Cottus bairdii',
+        srr_verbose == 'Mountain Whitefish' ~ 'Prosopium williamsoni',
+        srr_verbose == 'Northern Pikeminnow' ~ 'Ptychocheilus oregonensis',
+        srr_verbose == 'Pacific Lamprey' ~ 'Entosphenus tridentatus',
+        srr_verbose == 'Peamouth' ~ 'Mylocheilus caurinus',
+        srr_verbose == 'Redside Shiner' ~ 'Richardsonius balteatus',
+        srr_verbose == 'Sculpin species' ~ 'Cottus sp.',
+        srr_verbose == 'Smallmouth Bass' ~ 'Micropterus dolomieu',
+        srr_verbose == 'Speckled Dace' ~ 'Rhinichthys osculus',
+        srr_verbose == 'Sucker species' ~ 'Catostomus sp.',
+        srr_verbose %in% c('Wild Coastal Cutthroat', 'Wild Resident Cutthroat') ~ 'Oncorhynchus clarkii',
+        srr_verbose == 'Wild Sockeye (unknown run)' ~ 'Oncorhynchus nerka',
         TRUE ~ NA_character_
       ),
       family = case_when(
-        srrverbose %in% c('Unknown', 'Unknown (fish not observed)', 'Other', 'No Fish Day') ~ NA_character_,
-        grepl('Chinook', srrverbose) ~ 'Salmonidae',
-        grepl('Steelhead|Rainbow Trout', srrverbose) ~ 'Salmonidae',
-        grepl('Coho', srrverbose) ~ 'Salmonidae',
-        srrverbose == 'American Shad' ~ 'Clupeidae',
-        srrverbose == 'Bridgelip Sucker' ~ 'Catostomidae',
-        srrverbose == 'Brook Trout' ~ 'Salmonidae',
-        srrverbose == 'Bull Trout' ~ 'Salmonidae',
-        srrverbose == 'Bullhead Catfish' ~ 'Ictaluridae',
-        srrverbose == 'Channel Catfish' ~ 'Ictaluridae',
-        srrverbose == 'Chiselmouth' ~ 'Leuciscidae',
-        srrverbose == 'Dace species' ~ 'Cyprinidae',
-        srrverbose == 'Largescale Sucker' ~ 'Catostomidae',
-        srrverbose == 'Longnose Dace' ~ 'Leuciscidae',
-        srrverbose == 'Mottled Sculpin' ~ 'Cottidae',
-        srrverbose == 'Mountain Whitefish' ~ 'Salmonidae',
-        srrverbose == 'Northern Pikeminnow' ~ 'Leuciscidae',
-        srrverbose == 'Pacific Lamprey' ~ 'Petromyzontidae',
-        srrverbose == 'Peamouth' ~ 'Cyprinidae',
-        srrverbose == 'Redside Shiner' ~ 'Cyprinidae',
-        srrverbose == 'Sculpin species' ~ 'Cottidae', # this might not be 100% correct.
-        srrverbose == 'Smallmouth Bass' ~ 'Centrarchidae',
-        srrverbose == 'Speckled Dace' ~ 'Leuciscidae',
-        srrverbose == 'Sucker species' ~ 'Catostomidae',
-        srrverbose %in% c('Wild Coastal Cutthroat', 'Wild Resident Cutthroat') ~ 'Salmonidae',
-        srrverbose == 'Wild Sockeye (unknown run)' ~ 'Salmonidae',
+        srr_verbose %in% c('Unknown', 'Unknown (fish not observed)', 'Other', 'No Fish Day') ~ NA_character_,
+        grepl('Chinook', srr_verbose) ~ 'Salmonidae',
+        grepl('Steelhead|Rainbow Trout', srr_verbose) ~ 'Salmonidae',
+        grepl('Coho', srr_verbose) ~ 'Salmonidae',
+        srr_verbose == 'American Shad' ~ 'Clupeidae',
+        srr_verbose == 'Bridgelip Sucker' ~ 'Catostomidae',
+        srr_verbose == 'Brook Trout' ~ 'Salmonidae',
+        srr_verbose == 'Bull Trout' ~ 'Salmonidae',
+        srr_verbose == 'Bullhead Catfish' ~ 'Ictaluridae',
+        srr_verbose == 'Channel Catfish' ~ 'Ictaluridae',
+        srr_verbose == 'Chiselmouth' ~ 'Leuciscidae',
+        srr_verbose == 'Dace species' ~ 'Cyprinidae',
+        srr_verbose == 'Largescale Sucker' ~ 'Catostomidae',
+        srr_verbose == 'Longnose Dace' ~ 'Leuciscidae',
+        srr_verbose == 'Mottled Sculpin' ~ 'Cottidae',
+        srr_verbose == 'Mountain Whitefish' ~ 'Salmonidae',
+        srr_verbose == 'Northern Pikeminnow' ~ 'Leuciscidae',
+        srr_verbose == 'Pacific Lamprey' ~ 'Petromyzontidae',
+        srr_verbose == 'Peamouth' ~ 'Cyprinidae',
+        srr_verbose == 'Redside Shiner' ~ 'Cyprinidae',
+        srr_verbose == 'Sculpin species' ~ 'Cottidae', # this might not be 100% correct.
+        srr_verbose == 'Smallmouth Bass' ~ 'Centrarchidae',
+        srr_verbose == 'Speckled Dace' ~ 'Leuciscidae',
+        srr_verbose == 'Sucker species' ~ 'Catostomidae',
+        srr_verbose %in% c('Wild Coastal Cutthroat', 'Wild Resident Cutthroat') ~ 'Salmonidae',
+        srr_verbose == 'Wild Sockeye (unknown run)' ~ 'Salmonidae',
         TRUE ~ NA_character_
       ),
       streamname = case_when(
-        eventsite %in% c('JOHNSC', 'JOHTRP') ~ 'Johnson Creek',   # should we have trap site and streamname separate?
-        eventsite == 'SECTRP' ~ 'Secesh River',
-        eventsite == 'IMNTRP' ~ 'Imnaha River',
-        eventsite %in% c('CLWRSF', 'SFCTRP') ~ 'South Fork Clearwater River',
-        eventsite %in% c('LOLOC', 'LOLTRP') ~ 'Lolo Creek',
-        eventsite == 'NEWSOC' ~ 'Newsome Creek',
+        event_site %in% c('JOHNSC', 'JOHTRP') ~ 'Johnson Creek',   # should we have trap site and streamname separate?
+        event_site == 'SECTRP' ~ 'Secesh River',
+        event_site == 'IMNTRP' ~ 'Imnaha River',
+        event_site %in% c('CLWRSF', 'SFCTRP') ~ 'South Fork Clearwater River',
+        event_site %in% c('LOLOC', 'LOLTRP') ~ 'Lolo Creek',
+        event_site == 'NEWSOC' ~ 'Newsome Creek',
         TRUE ~ NA_character_  # skipped LSFTRP/MCCA/NA/NPTH
       ),
       emigrant_group = case_when(
-        scientific_name == 'Oncorhynchus tshawytscha' & lifestage == 'Parr' ~ 'Natural Chinook Salmon Parr',
-        scientific_name == 'Oncorhynchus tshawytscha' & lifestage == 'Presmolt' ~ 'Natural Chinook Salmon Presmolts',
-        scientific_name == 'Oncorhynchus tshawytscha' & lifestage == 'Smolt' ~ 'Natural Chinook Salmon Smolts',
+        scientific_name == 'Oncorhynchus tshawytscha' & life_stage == 'Parr' ~ 'Natural Chinook Salmon Parr',
+        scientific_name == 'Oncorhynchus tshawytscha' & life_stage == 'Presmolt' ~ 'Natural Chinook Salmon Presmolts',
+        scientific_name == 'Oncorhynchus tshawytscha' & life_stage == 'Smolt' ~ 'Natural Chinook Salmon Smolts',
         scientific_name == 'Oncorhynchus tshawytscha' & origin == 'Hatchery' ~ 'Hatchery Chinook Salmon Smolts',
         scientific_name == 'Oncorhynchus mykiss' & origin == 'Natural' ~ 'Natural Steelhead Juveniles',
         scientific_name == 'Oncorhynchus mykiss' & origin == 'Hatchery' ~ 'Hatchery Steelhead Juveniles',
@@ -163,10 +176,13 @@ clean_P4Data <- function(data){
 
     # establish emigrant groups? - plot groups?
 
-    select(eventsite, streamname, event_date, event_time, gmt_offset, trap_start_datetime, trap_end_datetime,
-           hours_sampled, operational_condition, sessionnote, origin, srrverbose, speciesrunreartype,
-           eventtype, pittag, length, weight, condition_factor, lifestage, nfish, broodyear,
-           conditionalcomments, textcomments, tagger, pit_tag_issued, efficiency_mark,
+    # get common staff gauge
+    mutate(staff_gauge = ifelse(!is.na(staff_gauge_ft), staff_gauge_ft, staff_gauge_cm * 2.54 * 12)) %>%
+
+    select(event_site, streamname, event_date, event_time, gmt_offset, trap_start_datetime, trap_end_datetime,
+           hours_sampled, operational_condition, session_note, origin, srr_verbose, species_run_rear_type,
+           event_type, pit_tag, length, weight, condition_factor, life_stage, nfish, brood_year,
+           conditional_comments, text_comments, tagger, pit_tag_issued, efficiency_mark,
            efficiency_recap, mortality, target, scientific_name, family, emigrant_group,
            everything())
 
