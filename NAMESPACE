@@ -2,7 +2,7 @@
 
 export(cades_JuvOutmigrant)
 export(cades_NOSA)
-export(clean_FCRRData)
+export(clean_FallRR)
 export(clean_P4Data)
 export(clean_WaterTempData)
 export(clean_carcassData)
