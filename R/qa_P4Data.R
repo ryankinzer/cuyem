@@ -17,19 +17,17 @@ qa_P4Data <- function(data){
   {if(is.null(data))stop("RST data must be supplied")}
 
   spp_counts <- data %>%
-    group_by(capture_method, srr_verbose, brood_year, migration_year, release_site) %>%
-    tally(nfish) %>%
-    arrange(brood_year, srr_verbose, desc(n))
+    mutate(release_year = lubridate::year(release_date)) %>%
+    group_by(capture_method, srr_verbose, release_site, brood_year, migration_year, release_year) %>%
+    summarise(n_events = n_distinct(name),
+              n_fish = sum(nfish)) %>%
+    arrange(srr_verbose, release_site, brood_year)
 
   disp_sums <- data %>%
-    group_by(srr_verbose, life_stage, event_type, conditional_comments, text_comments, mark_recap, mortality) %>%
-    summarise(n = sum(nfish))
-
-  bio_plot <- data %>%
-      filter(srr_verbose != 'No Fish Day') %>%
-      ggplot(aes(x = length, y = weight)) +
-      geom_point() +
-      facet_wrap(~srr_verbose, scale = 'free')
+    group_by(srr_verbose, trap_season, event_type, conditional_comments, text_comments, mark_recap, mortality) %>%
+    summarise(n_events = n_distinct(name),
+              n_fish = sum(nfish)) %>%
+    arrange(srr_verbose, trap_season)
 
   ops_dat <- data %>%
     select(event_date, trap_rpm, mark_temperature, staff_gauge) %>%
@@ -118,11 +116,26 @@ qa_P4Data <- function(data){
     full_join(weather_check, by = 'name') %>%
     full_join(lamprey_check, by = 'name')
 
+
+  #get marks
+  mark_df <- data %>%
+    filter(pit_tagged) %>% # assigned with the clean function
+    filter(mark_recap == 'mark') %>% # assigned with the clean function
+    select(mark_file = name, event_site, trap_season, mark_date = event_date, pit_tag)
+
+  # get recaps
+  recap_df <- data %>%
+    filter(pit_tagged) %>%
+    filter(mark_recap == 'recap') %>%
+    select(recap_file = name, pit_tag, recap_date = event_date)
+
+  orphan <- anti_join(recap_df, mark_df)
+
   return(list('spp_counts' = spp_counts,
               'disp_sums' = disp_sums,
-              'bio_plot' = bio_plot,
+              'validation' = validation_df,
+              'orphan_tags' = orphan,
               'temp_plot' = temp_plot,
               'rpm_plot' = rpm_plot,
-              'staff_plot' = staff_plot,
-              'validation' = validation_df))
+              'staff_plot' = staff_plot))
 }

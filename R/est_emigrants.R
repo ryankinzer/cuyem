@@ -10,67 +10,51 @@
 #' @section Warning: Standard error and confidence intervals will not match GAUSS estimates
 #'   perfectly because of bootstrapped sample distribution.
 #'
-#' @param data An R dataframe or "example.csv" file containing at least three fields of data; the count of unmarked (\code{C}), marked (\code{M}) fish released
-#'   upstream to conduct trap efficiency trials, and recaptured (\code{R}) trap
-#'   efficiency fish. Field names are required to be; C, M, R.  All other fields are ignored.
+#' @param data An R dataframe containing at least three fields of data; the count of "unmark",  "mark", and "recap" fish captured in the trap. Each row of the #' data is treated as an independent strata. Grouping variables can also be included in the data (e.g., trap season or life-stage).
 #'
+#' @param unmark
+#' @param mark
+#' @param recap
 #' @param alpha Type I error rate.  Default is set at 0.05 to produce 95\%
 #'   confidence intervals.
-#'
 #' @param iter The number of bootstrap iterations to be run.  Default is set at
 #'   1000.
-#'
-#' @param print Logical value. Default value is TRUE. Should results be printed to the console?
-#'
-#' @param save_file Logical value. Default value is FALSE.  Should the results be saved as a .csv file to the current working directory?
-#'
-#' @param file_name A character string with the desired name of the outputed .csv file.  The saved file name
-#' will also have the month, day and year of creation appended to the file_name.
-#'
 #' @author Ryan N. Kinzer
 #'
 #' @examples
-#' # A single strata
-#' est1 <- est_emigrants(data.frame(C = 76, M = 68, R = 7), alpha = 0.05, iter = 1000, print = TRUE)
-#' names(est1)
-#' est1$Strata
+#' u <- c(76, 128, 82, 61, 350, 74)
+#' m <- c(68, 117, 70, 42, 282, 64)
+#' r <- c(7, 10, 9, 18, 48, 10)
 #'
-#' # Multiple strata
-#' unM <- c(76, 128, 82, 61, 350, 74)
-#' M <- c(68, 117, 70, 42, 282, 64)
-#' recap <- c(7, 10, 9, 18, 48, 10)
-#'
-#' dat <- data.frame(C = unM, M = M, R = recap)
+#' dat <- data.frame('u' = u, 'm' = m, 'r' = r)
 #' est_strata <- est_emigrants(data = dat, alpha = .05,iter = 1000, print=TRUE)
 #' est_strata$Strata
-#'
-#' est_csv <- est_emigrants(data = "example.csv", alpha = .05,iter = 1000, print=TRUE)
 #'
 #' @return A list of point and uncertainty estimates by each strata.
 #'
 #' @export
 
-est_emigrants <- function(data, alpha = 0.05, iter = 1000, print = TRUE, save_file = FALSE, file_name = NULL){
+est_emigrants <- function(data, unmark, mark, recap, alpha = 0.05, iter = 1000, boot_values = FALSE, print = FALSE){
 
-  if(is.character(data) == TRUE){
-    input <- read.csv(file = data, header = TRUE, sep =',')
-    } else {
-    input <- data
-    }
+  if(is.null(data)){stop("A dataset is necessary for the function to work.")}
 
-  C <- input$C
-  M <- input$M
-  R <- input$R
+  unmark <- ensym(unmark)
+  mark <- ensym(mark)
+  recap <- ensym(recap)
 
-    df = data.frame(matrix(NA,length(C)+1,9, dimnames=list(c(),c("Strata", "C",
-         "M","R","Efficiency","N.hat","Std.error","CI.lower","CI.upper"))),
+  C <- data %>% select(!!unmark) %>% pull()
+  M <- data %>% select(!!mark) %>% pull()
+  R <- data %>% select(!!recap) %>% pull()
+
+    df = data.frame(matrix(NA,length(C)+1,9, dimnames=list(c(),c("strata", "unmark",
+         "mark","recap","efficiency","Nhat","std_error","ci_upper","ci_lower"))),
          stringsAsFactors=F)
-    df$Strata = c(1:length(C),"Total")
-    df$C = c(C,sum(C))
-    df$M = c(M,sum(M))
-    df$R = c(R,sum(R))
-    df$Efficiency = round(df$R/df$M,3)
-    df$N.hat = round((df$C*(df$M + 1))/(df$R + 1))
+    df$strata = c(1:length(C),"Total")
+    df$unmark = c(C,sum(C))
+    df$mark = c(M,sum(M))
+    df$recap = c(R,sum(R))
+    df$efficiency = round(df$recap/df$mark,3)
+    df$Nhat = round((df$unmark*(df$mark + 1))/(df$recap + 1))
     df[length(C)+1,6] = sum(df[1:length(C),6])
     Nboot = matrix(NA,iter,length(C))
     for(i in 1:(dim(df)[1]-1)){
@@ -96,25 +80,29 @@ est_emigrants <- function(data, alpha = 0.05, iter = 1000, print = TRUE, save_fi
     df[length(C)+1,8] = ci_t[1]
     df[length(C)+1,9] = ci_t[2]
 
-    if(save_file == TRUE){
-      if(is.null(file_name)){
-        name <- as.character(paste0("emigrant_abundance_",format(Sys.Date(), format="%m%d%Y"),".csv"))
-          } else {
-        name <- as.character(paste0(file_name,"_",format(Sys.Date(), format="%m%d%Y"),".csv"))
-          }
-        write.csv(df, file = name, row.names = FALSE)
-      }
+    # if(save_file == TRUE){
+    #   if(is.null(file_name)){
+    #     name <- as.character(paste0("emigrant_abundance_",format(Sys.Date(), format="%m%d%Y"),".csv"))
+    #       } else {
+    #     name <- as.character(paste0(file_name,"_",format(Sys.Date(), format="%m%d%Y"),".csv"))
+    #       }
+    #     write.csv(df, file = name, row.names = FALSE)
+    #   }
+
+    tot_df <- data.frame('Nhat' = df[length(C)+1,6],
+                         'std_error' = df[length(C)+1,7],
+                         'lwr' = df[length(C)+1,8],
+                         'upr' = df[length(C)+1,9])
 
     if(print == TRUE){
-      cat("Total N.hat = ",df[length(C)+1,6],"\n",
-          "Std. Error = ",df[length(C)+1,7],"\n",
-          "CI.Lower = ",df[length(C)+1,8],"\n",
-          "CI.Upper = ",df[length(C)+1,9],"\n")
-      }
+      print(tot_df)
+    }
 
-    output = list(N.hat = df[length(C)+1,6],Std.error = df[length(C)+1,7],
-                  CI.lower = df[length(C)+1,8], CI.upper = df[length(C)+1,9], Strata = df,
-                  Nboot = Nboot, Ntot = Ntot)
+    output = list(Nhat = tot_df, strata = df[1:length(C),5:9])
+
+    if(boot_values == TRUE){
+      output = list(Nhat = tot_df, strata = df[1:length(C),5:9], Nboot = Nboot)
+    }
 
     return(output)
 

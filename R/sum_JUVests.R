@@ -37,9 +37,9 @@ sum_JUVests <- function(alpha = c('0.05', '0.10'),
     stop('A CDMS login is required for this function to work. Please use \"cdmsLogin\" with your username and password first.', call. = FALSE)
   }
 
-  a_raw <- cdmsR::getDatasetView(datastoreID = 85, cdms_host = cdms_host)
+  a_raw <- cdmsR::get_DatasetView(datastoreID = 85, cdms_host = cdms_host)
 
-  s_raw <- cdmsR::getDatasetView(datastoreID = 86, cdms_host = cdms_host)
+  s_raw <- cdmsR::get_DatasetView(datastoreID = 86, cdms_host = cdms_host)
 
   a_df <- a_raw %>%
     filter(Lifestage != 'Total') %>%

@@ -50,17 +50,18 @@ clean_P4Data <- function(data){
            across(.cols = c(trap_rpm, staff_gauge_ft), as.double),
            across(.cols = c(nfish, staff_gauge_cm), as.integer)) %>%
     mutate(
-      pit_tag_issued = if_else(pit_tag == '..........', FALSE, TRUE),
+      pit_tagged = if_else(pit_tag == '..........', FALSE, TRUE),
       mark_recap = case_when(
         # get marks
         event_type == 'Mark' & grepl('\\bTU\\b', text_comments, ignore.case = T) ~ 'mark',
         event_type %in% c('Mark', 'Tally') & grepl('\\bCL\\b|\\bCU\\b', conditional_comments, ignore.case = T) ~ 'mark',
         # get recaps
-        event_type %in% c('Recapture', 'Recovery') & grepl('\\bRE\\b', conditional_comments) & grepl('\\bRC\\b', text_comments) ~ 'recap',
-        event_type %in% c('Recapture', 'Recovery') & grepl('\\bRE\\b', conditional_comments) & grepl('\\bCL\\b|\\bCU\\b', conditional_comments) ~ 'recap',
+        grepl('\\bRE\\b', conditional_comments) & grepl('\\bRC\\b', text_comments) ~ 'recap',
+        grepl('\\bRE\\b', conditional_comments) & grepl('\\bCL\\b|\\bCU\\b', conditional_comments) ~ 'recap',
+        # exclude DS
+        grepl('\\bRE\\b', conditional_comments) & grepl('\\bDS\\b', text_comments) ~ 'not used',
         # get unmarks
-        !grepl('RE', conditional_comments) ~ 'unmark',
-      TRUE ~ 'not used'
+      TRUE ~ 'unmark'
         ),
       efficiency_mark = case_when(  # Bismark Brown? BBY? ********************
         # Tagged sent upstream
@@ -91,9 +92,14 @@ clean_P4Data <- function(data){
         # Spring/summer Chinook - this doesn't deal with Fall chinook properly.
         grepl('YOY', text_comments) ~ 'YOY',
         origin == 'Natural' & lubridate::month(event_date) %in% c(1:6) ~ 'Smolt',
-        origin == 'Natural' & lubridate::month(event_date) %in% c(7:9) ~ 'Parr',
-        origin == 'Natural' & lubridate::month(event_date) %in% c(10:12) ~ 'Presmolt',
+        origin == 'Natural' & lubridate::month(event_date) %in% c(7:8) ~ 'Parr',
+        origin == 'Natural' & lubridate::month(event_date) %in% c(9:12) ~ 'Presmolt',
         TRUE ~ NA_character_
+      ),
+      trap_season = case_when(
+        lubridate::month(event_date) %in% c(1:6) ~ 'Spring',
+        lubridate::month(event_date) %in% c(7:8) ~ 'Summer',
+        lubridate::month(event_date) %in% c(9:12) ~ 'Fall',
       ),
       condition_factor = (weight/length^3)*100000,
       target = if_else(species_run_rear_type %in% c('11H', '11W', '12H', '12W', '32W', '32H', '25W', '25H', '7RW', 'A0W'), TRUE, FALSE), # 1=target, 0=incidental
@@ -182,7 +188,7 @@ clean_P4Data <- function(data){
     select(event_site, streamname, event_date, event_time, gmt_offset, trap_start_datetime, trap_end_datetime,
            hours_sampled, operational_condition, session_note, origin, srr_verbose, species_run_rear_type,
            event_type, pit_tag, length, weight, condition_factor, life_stage, nfish, brood_year,
-           conditional_comments, text_comments, tagger, pit_tag_issued, efficiency_mark,
+           conditional_comments, text_comments, tagger, pit_tagged, efficiency_mark,
            efficiency_recap, mortality, target, scientific_name, family, emigrant_group,
            everything())
 

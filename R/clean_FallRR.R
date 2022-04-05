@@ -1,13 +1,13 @@
 #' @title Clean Fall Chinook Run Reconstruction (FCRR) Data
 #' @description Processes raw FCRR data into a more manageable format.
-#' @param data raw CDMS FCRR dataset from \code{cdmsR::getDatasetView(datastore = 100)} or from CDMS dataset export
+#' @param data raw CDMS FCRR dataset from \code{cdmsR::get_FallRR()} or from CDMS dataset export
 #' @export
 #' @import dplyr
 #' @author Tyler T. Stright
 #' @examples
-#' fcrr_dat <- getDatasetView(datastore = 100)
-#' fcrr_clean <- clean_FCRRData(fcrr_dat)
-clean_FCRRData <- function(data){
+#' fcrr_dat <- get_FallRR())
+#' fcrr_clean <- clean_FallRR(fcrr_dat)
+clean_FallRR <- function(data){
   {if(is.null(data))stop("FCRR data must be supplied")}
 
   # remove 02_FCRR_standardize.R when this is complete.

@@ -16,7 +16,6 @@
 #'
 #' @author Tyler T. Stright
 #'
-#' @examples
 
 gg_strata <- function(daily_df, strata_df, species = c('Chinook', 'Steelhead')) {
 

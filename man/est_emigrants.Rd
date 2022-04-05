@@ -6,30 +6,23 @@
 \usage{
 est_emigrants(
   data,
+  unmark,
+  mark,
+  recap,
   alpha = 0.05,
   iter = 1000,
-  print = TRUE,
-  save_file = FALSE,
-  file_name = NULL
+  boot_values = FALSE,
+  print = FALSE
 )
 }
 \arguments{
-\item{data}{An R dataframe or "example.csv" file containing at least three fields of data; the count of unmarked (\code{C}), marked (\code{M}) fish released
-upstream to conduct trap efficiency trials, and recaptured (\code{R}) trap
-efficiency fish. Field names are required to be; C, M, R.  All other fields are ignored.}
+\item{data}{An R dataframe containing at least three fields of data; the count of "unmark",  "mark", and "recap" fish captured in the trap. Each row of the #' data is treated as an independent strata. Grouping variables can also be included in the data (e.g., trap season or life-stage).}
 
 \item{alpha}{Type I error rate.  Default is set at 0.05 to produce 95\%
 confidence intervals.}
 
 \item{iter}{The number of bootstrap iterations to be run.  Default is set at
 1000.}
-
-\item{print}{Logical value. Default value is TRUE. Should results be printed to the console?}
-
-\item{save_file}{Logical value. Default value is FALSE.  Should the results be saved as a .csv file to the current working directory?}
-
-\item{file_name}{A character string with the desired name of the outputed .csv file.  The saved file name
-will also have the month, day and year of creation appended to the file_name.}
 }
 \value{
 A list of point and uncertainty estimates by each strata.
@@ -48,21 +41,13 @@ A list of point and uncertainty estimates by each strata.
 }
 
 \examples{
-# A single strata
-est1 <- est_emigrants(data.frame(C = 76, M = 68, R = 7), alpha = 0.05, iter = 1000, print = TRUE)
-names(est1)
-est1$Strata
+u <- c(76, 128, 82, 61, 350, 74)
+m <- c(68, 117, 70, 42, 282, 64)
+r <- c(7, 10, 9, 18, 48, 10)
 
-# Multiple strata
-unM <- c(76, 128, 82, 61, 350, 74)
-M <- c(68, 117, 70, 42, 282, 64)
-recap <- c(7, 10, 9, 18, 48, 10)
-
-dat <- data.frame(C = unM, M = M, R = recap)
+dat <- data.frame('u' = u, 'm' = m, 'r' = r)
 est_strata <- est_emigrants(data = dat, alpha = .05,iter = 1000, print=TRUE)
 est_strata$Strata
-
-est_csv <- est_emigrants(data = "example.csv", alpha = .05,iter = 1000, print=TRUE)
 
 }
 \author{
