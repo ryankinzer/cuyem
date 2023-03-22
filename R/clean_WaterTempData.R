@@ -15,8 +15,9 @@ clean_WaterTempData <- function(data){
 
   # fix data types
   clean_df <- data %>%
-    mutate(across(c(readingdatetime, activitydate, start_date, end_date, createdate), lubridate::ymd_hms),
-           across(c(activitydate, start_date, end_date), lubridate::ymd)) %>%
+    mutate(across(c(readingdatetime, activitydate, start_date, end_date, createdate), gsub, pattern='T', replacement=' '),
+           across(c(readingdatetime, activitydate, start_date, end_date, createdate), lubridate::ymd_hms)) %>%
+           # across(c(activitydate, start_date, end_date), lubridate::ymd)) %>%
     separate(readingdatetime, into = c('reading_date', 'reading_time'), sep = ' ', remove = FALSE) %>%
     mutate(reading_date = ymd(reading_date)) %>%
     select(locationlabel, instrument_name = name, readingdatetime, reading_date, reading_time, watertemperature,
