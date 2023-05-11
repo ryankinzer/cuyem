@@ -1,6 +1,6 @@
 #' @title clean_WaterTempData:
 #' @description Cleans raw CDMS water temperature data
-#' @param data raw CDMS water temperature dataset from \code{cdmsR::get_WaterTempData(start_date = 'mm-dd-yyyy', end_date = 'mm-dd-yyyy')}
+#' @param data raw CDMS water temperature dataset from \code{cdmsR::get_WaterTempData(year=2020)}
 #' @export
 #' @import dplyr
 #' @author Tyler T. Stright
@@ -15,23 +15,23 @@ clean_WaterTempData <- function(data){
 
   # fix data types
   clean_df <- data %>%
-    mutate(across(c(readingdatetime, activitydate, start_date, end_date, createdate), gsub, pattern='T', replacement=' '),
+    mutate(across(c(readingdatetime, activitydate, start_date, end_date, createdate), \(x) gsub('T',' ', x)),
            across(c(readingdatetime, activitydate, start_date, end_date, createdate), lubridate::ymd_hms)) %>%
-           # across(c(activitydate, start_date, end_date), lubridate::ymd)) %>%
     separate(readingdatetime, into = c('reading_date', 'reading_time'), sep = ' ', remove = FALSE) %>%
     mutate(reading_date = ymd(reading_date)) %>%
     select(locationlabel, instrument_name = name, readingdatetime, reading_date, reading_time, watertemperature,
-           downloaded_by, comments, starts_with('instantaneous_'), activityid, downloaddate = activitydate, start_date, end_date, locationid, datasetid, instrumentid, everything()) %>%
+           downloaded_by, comments, starts_with('instantaneous_'), activityid,
+           downloaddate = activitydate, start_date, end_date, locationid, datasetid, instrumentid, everything()) %>%
     # remove system fields
     select(-ends_with('effdt'))
 
-  date_range <- tibble(
-    reading_date = seq(lubridate::ymd(min(clean_df$reading_date, na.rm=TRUE)),
-                     lubridate::ymd(max(clean_df$reading_date, na.rm=TRUE)), by="day"))
+  # date_range <- tibble(
+  #   reading_date = seq(lubridate::ymd(min(clean_df$reading_date, na.rm=TRUE)),
+  #                    lubridate::ymd(max(clean_df$reading_date, na.rm=TRUE)), by="day"))
+  #
+  # complete_df <- clean_df %>%
+  #   complete(reading_date = date_range$reading_date, nesting(locationlabel))
 
-  complete_df <- clean_df %>%
-    complete(reading_date = date_range$reading_date, nesting(locationlabel))
 
-
-  return(complete_df)
+  return(clean_df)
 }
