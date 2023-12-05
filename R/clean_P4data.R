@@ -39,9 +39,9 @@ clean_P4Data <- function(data){
 
 
     # Do we need to modify other datetime fields?  This is acting strange currently (2/8/22)
-    # separate(event_date, into = c('event_date', 'event_time'), sep='T') %>% # this is the only trustworthy datetime, filled and standardized by P4
-    separate(event_date, into = c('event_date', 'event_time', 'gmt_offset'), sep = ' ') %>%
-    mutate(event_time = gsub('.0000000', '', event_time)) %>%
+    # update 12/5/2023 -- the datetime format from CDMS changes for some reason.
+    separate(event_date, into = c('event_date', 'event_time'), sep='T') %>% # event_date is the only trustworthy datetime, filled and standardized by P4
+    separate(event_time, into = c('event_time', 'gmt_offset'), sep = '-') %>%
 
 
     # Fixing datatypes

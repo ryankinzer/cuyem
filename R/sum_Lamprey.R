@@ -14,7 +14,7 @@
 #'
 #' @examples
 #' data_raw <- get_P4Data(SRRcode = 'A0W', CalendarYear = 2021)
-#' data_clean <- cuyem::clean_p4Data(data_raw)
+#' data_clean <- cuyem::clean_P4Data(data_raw)
 #' lamprey_sum <- sum_Lamprey(data_clean
 
 sum_Lamprey <- function(data) {
@@ -29,16 +29,16 @@ sum_Lamprey <- function(data) {
     event_date = seq(lubridate::ymd(paste0(year, '-01-01')),
                      lubridate::ymd(paste0(year, '-12-31')), by="day"))
 
-  # summarize daily by site & lifestage
+  # summarize daily by site & life_stage
   data_spread <- data %>%
-    filter(speciesrunreartype == 'A0W') %>%
-    mutate(genetics_taken = if_else(is.na(geneticid), 'no', 'yes'),
-           lifestage = if_else(is.na(lifestage), 'Unknown', lifestage)) %>%
-    group_by(eventsite, event_date, speciesrunreartype, lifestage, genetics_taken) %>%
+    filter(species_run_rear_type == 'A0W') %>%
+    mutate(genetics_taken = if_else(is.na(genetic_id), 'no', 'yes'),
+           life_stage = if_else(is.na(life_stage), 'Unknown', life_stage)) %>%
+    group_by(event_site, event_date, species_run_rear_type, life_stage, genetics_taken) %>%
     summarize(catch = sum(nfish)) %>%
-    spread(key = lifestage, value = catch, fill = 0)
+    spread(key = life_stage, value = catch, fill = 0)
 
-  # insert lifestage columns if needed
+  # insert life_stage columns if needed
   if(!'Ammocoete' %in% names(data_spread)) {data_spread$Ammocoete <- 0}
   if(!'Macropthalmia' %in% names(data_spread)) {data_spread$Macropthalmia <- 0}
   if(!'Adult' %in% names(data_spread)) {data_spread$Adult <- 0}
@@ -47,10 +47,10 @@ sum_Lamprey <- function(data) {
   # complete all dates, they want zeros.
   data_complete <- data_spread %>%
     ungroup() %>%
-    complete(event_date = date_range$event_date, nesting(eventsite),
-             fill = list(speciesrunreartype = 'A0W', genetics_taken = 'no',
+    complete(event_date = date_range$event_date, nesting(event_site),
+             fill = list(species_run_rear_type = 'A0W', genetics_taken = 'no',
                          Ammocoete = 0, Macropthalmia = 0, Adult = 0, Unknown = 0)) %>%
-    arrange(eventsite, event_date)
+    arrange(event_site, event_date)
 
   return(data_complete)
 }
